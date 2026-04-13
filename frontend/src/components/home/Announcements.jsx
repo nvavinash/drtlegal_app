@@ -31,8 +31,8 @@ const Announcements = () => {
   };
 
   return (
-    <SectionWrapper id="announcements" className="bg-zinc-50">
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+    <SectionWrapper id="announcements" className="bg-red-50">
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-2">
         <div className="text-left">
           <h2 className="text-3xl font-bold text-zinc-900 mb-2">Notice Board</h2>
           <p className="text-zinc-500 max-w-xl">Stay updated with the top events and newest circulars from the association.</p>
@@ -55,7 +55,8 @@ const Announcements = () => {
             onClick={() => handleAction(item)}
             className="group cursor-pointer hover:border-primary/30 transition-all duration-300"
           >
-            <div className="p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
+            <div className="p-4 md:p-6 flex flex-col md:flex-row md:items-center gap-2 md:gap-6">
+            
               {/* Type Icon */}
               <div className={`w-12 h-12 shrink-0 rounded-xl flex items-center justify-center transition-colors duration-300 ${
                 item.type === 'event' 

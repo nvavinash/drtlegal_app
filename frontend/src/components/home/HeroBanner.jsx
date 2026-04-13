@@ -26,7 +26,7 @@ const HeroBanner = () => {
           <circle cx="12" cy="12" r="10" />
         </svg> */}
         <div>
-          <img src="src/assets/legal-profession.jpg" alt="" className="w-full max-w-5xl h-auto"/>
+          <img src="src/assets/legal-profession.jpg" alt="" className="w-full max-w-5xl lg:max-w-7xl mx-auto h-auto"/>
         </div>
       </div>
 
@@ -52,15 +52,6 @@ const HeroBanner = () => {
           integrity, and the advancement of the legal profession in Debt Recovery Tribunals.
         </motion.p>
 
-        <motion.div variants={fadeInUp}>
-          <Button 
-            size="lg" 
-            className="px-8 py-6 text-lg font-medium bg-primary hover:bg-primary/90 transition-all duration-300 rounded-full"
-            onClick={() => navigate("/login")}
-          >
-            Admin Login
-          </Button>
-        </motion.div>
       </motion.div>
     </section>
   );

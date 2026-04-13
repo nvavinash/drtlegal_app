@@ -5,10 +5,12 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Events from "./pages/Events";
 import Notices from "./pages/Notices";
 import Members from "./pages/Members";
+import Navbar from "./components/Navbar";
 
 function App() {
   return (
     <BrowserRouter>
+      <Navbar />
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Home />} />

@@ -1,5 +1,7 @@
 import React from "react";
 import HeroBanner from "../components/home/HeroBanner";
+import MeetingSection from "../components/home/MeetingSection";
+import Leadership from "../components/home/Leadership";
 import Announcements from "../components/home/Announcements";
 import OfficeBearers from "../components/home/OfficeBearers";
 import QuickLinks from "../components/home/QuickLinks";
@@ -15,13 +17,19 @@ const Home = () => {
       {/* Hero Section */}
       <HeroBanner />
 
+      {/* Virtual Court / Meeting Section */}
+      <MeetingSection />
+
+      {/* Leadership Messages */}
+      <Leadership />
+
       {/* Announcements / Notices */}
       <Announcements />
 
       {/* Quick Access Links */}
       <QuickLinks />
 
-      {/* Leadership Section */}
+      {/* Full Team Section */}
       <OfficeBearers />
 
       {/* Simple Footer */}

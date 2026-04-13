@@ -77,7 +77,7 @@ const OfficeBearers = () => {
           >
             <CardContent className="pt-10 pb-8 px-4">
               {/* Image Container with Glow */}
-              <div className="relative w-32 h-32 mx-auto mb-6">
+              <div className="relative w-36 h-36 mx-auto mb-6">
                 <div className="absolute inset-0 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all duration-500" />
                 <div className="relative w-full h-full rounded-full border-4 border-white shadow-xl overflow-hidden bg-zinc-100 flex items-center justify-center">
                   {bearer.image ? (
@@ -97,7 +97,7 @@ const OfficeBearers = () => {
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-base font-bold text-zinc-900 leading-tight group-hover:text-primary transition-colors duration-300">
+                <h3 className="text-sm font-bold text-zinc-900 leading-tight group-hover:text-primary transition-colors duration-300">
                   {bearer.name}
                 </h3>
                 <p className="text-primary font-bold text-[10px] tracking-[0.2em] uppercase">

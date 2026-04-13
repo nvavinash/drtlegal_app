@@ -3,13 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Scale, LogOut, Users } from "lucide-react";
+import { Scale, LogOut, Users, Video, Save, CheckCircle } from "lucide-react";
 import axios from "axios";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [virtualLinks, setVirtualLinks] = useState({ drt1_link: "", drt2_link: "" });
+  const [updating, setUpdating] = useState(false);
+  const [status, setStatus] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -18,7 +21,6 @@ export default function AdminDashboard() {
       return;
     }
 
-    // Fetch users securely
     const fetchUsers = async () => {
       try {
         const res = await axios.get("http://localhost:5000/api/admin/users", {
@@ -28,19 +30,52 @@ export default function AdminDashboard() {
       } catch (err) {
         console.error("Failed to fetch users", err);
         if (err.response?.status === 401 || err.response?.status === 403) {
-          handleLogout(); // auto logout on unauthorized
+          handleLogout();
         }
       } finally {
         setLoading(false);
       }
     };
 
+    const fetchVirtualLinks = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/admin/virtual");
+        setVirtualLinks({
+          drt1_link: res.data.drt1_link || "",
+          drt2_link: res.data.drt2_link || "",
+        });
+      } catch (err) {
+        console.error("Failed to fetch virtual links", err);
+      }
+    };
+
     fetchUsers();
+    fetchVirtualLinks();
   }, [navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/");
+  };
+
+  const handleUpdateLinks = async (e) => {
+    e.preventDefault();
+    setUpdating(true);
+    setStatus("");
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post("http://localhost:5000/api/admin/virtual", 
+        { settings: virtualLinks },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setStatus("Settings updated successfully!");
+      setTimeout(() => setStatus(""), 3000);
+    } catch (err) {
+      console.error("Failed to update links", err);
+      setStatus("Error updating settings.");
+    } finally {
+      setUpdating(false);
+    }
   };
 
   return (
@@ -72,8 +107,62 @@ export default function AdminDashboard() {
           </Button>
         </div>
 
-        {/* Users Table Card */}
-        <Card className="bg-card border-border">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+          {/* Virtual Links Form */}
+          <Card className="lg:col-span-1 bg-card border-border shadow-sm">
+            <CardHeader>
+              <div className="flex items-center gap-2 mb-1">
+                <Video className="w-5 h-5 text-primary" />
+                <CardTitle className="text-lg">Meeting Links</CardTitle>
+              </div>
+              <CardDescription>Update monthly hearing links for DRT-1 and DRT-2.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleUpdateLinks} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-secondary-foreground">DRT-1 Link</label>
+                  <input
+                    type="url"
+                    className="w-full p-2.5 bg-background border border-border rounded-md text-sm focus:ring-1 focus:ring-primary outline-none transition-all"
+                    placeholder="https://zoom.us/j/..."
+                    value={virtualLinks.drt1_link}
+                    onChange={(e) => setVirtualLinks({ ...virtualLinks, drt1_link: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-secondary-foreground">DRT-2 Link</label>
+                  <input
+                    type="url"
+                    className="w-full p-2.5 bg-background border border-border rounded-md text-sm focus:ring-1 focus:ring-primary outline-none transition-all"
+                    placeholder="https://meet.google.com/..."
+                    value={virtualLinks.drt2_link}
+                    onChange={(e) => setVirtualLinks({ ...virtualLinks, drt2_link: e.target.value })}
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  disabled={updating}
+                  className="w-full bg-zinc-900 text-white hover:bg-zinc-800 transition-colors py-5"
+                >
+                  {updating ? "Saving..." : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Links
+                    </>
+                  )}
+                </Button>
+                {status && (
+                  <div className={`flex items-center gap-2 text-sm justify-center font-medium ${status.includes('Error') ? 'text-destructive' : 'text-emerald-600'}`}>
+                    {!status.includes('Error') && <CheckCircle className="w-4 h-4" />}
+                    {status}
+                  </div>
+                )}
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Table stays here but with span */}
+          <Card className="lg:col-span-2 bg-card border-border shadow-sm">
           <CardHeader>
             <CardTitle>Registered Members</CardTitle>
             <CardDescription>A list of all users and administrators within the platform.</CardDescription>
@@ -123,6 +212,7 @@ export default function AdminDashboard() {
             )}
           </CardContent>
         </Card>
+        </div>
       </main>
     </div>
   );

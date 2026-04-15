@@ -10,7 +10,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [virtualLinks, setVirtualLinks] = useState({ drt1_link: "", drt2_link: "" });
+  const [virtualLinks, setVirtualLinks] = useState({ drat_link: "", drt1_link: "", drt2_link: "" });
   const [updating, setUpdating] = useState(false);
   const [status, setStatus] = useState("");
 
@@ -41,6 +41,7 @@ export default function AdminDashboard() {
       try {
         const res = await axios.get("http://localhost:5000/api/admin/virtual");
         setVirtualLinks({
+          drat_link: res.data.drat_link || "",
           drt1_link: res.data.drt1_link || "",
           drt2_link: res.data.drt2_link || "",
         });
@@ -115,10 +116,20 @@ export default function AdminDashboard() {
                 <Video className="w-5 h-5 text-primary" />
                 <CardTitle className="text-lg">Meeting Links</CardTitle>
               </div>
-              <CardDescription>Update monthly hearing links for DRT-1 and DRT-2.</CardDescription>
+              <CardDescription>Update monthly hearing links for DRAT, DRT-1 and DRT-2.</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleUpdateLinks} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-amber-600">DRAT (Appellate Tribunal) Link</label>
+                  <input
+                    type="url"
+                    className="w-full p-2.5 bg-background border border-amber-200 rounded-md text-sm focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                    placeholder="https://dratchennai.webex.com/..."
+                    value={virtualLinks.drat_link}
+                    onChange={(e) => setVirtualLinks({ ...virtualLinks, drat_link: e.target.value })}
+                  />
+                </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-wider text-secondary-foreground">DRT-1 Link</label>
                   <input

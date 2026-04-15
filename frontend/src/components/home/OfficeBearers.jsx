@@ -69,11 +69,11 @@ const OfficeBearers = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 md:gap-8">
+      <div className="flex flex-wrap justify-center gap-8 max-w-6xl mx-auto">
         {officeBearers.map((bearer) => (
           <AnimatedCard 
             key={bearer.id} 
-            className="group relative overflow-hidden text-center border-none shadow-sm hover:shadow-xl transition-all duration-500 bg-zinc-50/50"
+            className="group relative overflow-hidden text-center border-none shadow-sm hover:shadow-xl transition-all duration-500 bg-zinc-50/50 w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.33%-2rem)] xl:w-[calc(20%-2rem)] min-w-[220px]"
           >
             <CardContent className="pt-10 pb-8 px-4">
               {/* Image Container with Glow */}
@@ -97,10 +97,10 @@ const OfficeBearers = () => {
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-sm font-bold text-zinc-900 leading-tight group-hover:text-primary transition-colors duration-300">
+                <h3 className="text-base font-black text-zinc-900 leading-tight group-hover:text-primary transition-colors duration-300 uppercase tracking-tighter">
                   {bearer.name}
                 </h3>
-                <p className="text-primary font-bold text-[10px] tracking-[0.2em] uppercase">
+                <p className="text-primary font-black text-[10px] tracking-[0.2em] uppercase">
                   {bearer.designation}
                 </p>
               </div>

@@ -53,6 +53,9 @@ const Navbar = () => {
               Association Hyderabad
             </span>
           </div>
+          <div className="flex gap-2">
+            <img src="src/assets/swach-bharat.png" alt="swach bharat" className="h-14"/>
+          </div>
         </Link>
 
         {/* Desktop Navigation */}

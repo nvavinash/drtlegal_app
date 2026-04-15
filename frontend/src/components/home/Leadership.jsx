@@ -5,7 +5,7 @@ import { Quote, Send } from "lucide-react";
 
 // Import demo assets
 import presidentImg from "../../assets/president.png";
-import secretaryImg from "../../assets/seceratary.png";
+import secretaryImg from "../../assets/seceratary.jpeg";
 import signatureImg from "../../assets/demo/signature.png";
 
 const Leadership = () => {
@@ -14,19 +14,17 @@ const Leadership = () => {
       id: "president",
       name: "Sri. SUBBA RAJU N V",
       designation: "President",
-      image: presidentImg,
-      message: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-      signature: signatureImg,
       role: "Lead Representative",
+      image: presidentImg,
+      message: "Our association is dedicated to providing robust legal support to advocates practicing in the Debt Recovery Tribunals. We strive to maintain the highest standards of professional ethics and facilitate a collaborative environment for legal excellence.",
     },
     {
       id: "secretary",
       name: "Sri. RAVINDER V",
       designation: "General Secretary",
-      image: presidentImg, // Using available asset for demo if secretaryImg is not preferred
-      message: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-      signature: signatureImg,
       role: "Administrative Head",
+      image: secretaryImg, 
+      message: "Communication and transparency are the pillars of our association. We are committed to ensuring that every member has access to the latest updates, digital resources, and support needed for their legal practice.",
     },
   ];
 
@@ -68,10 +66,10 @@ const Leadership = () => {
                   <span className="text-primary font-black text-xs uppercase tracking-[0.3em]">
                     {leader.role}
                   </span>
-                  <h3 className="text-3xl font-black text-zinc-900 tracking-tight">
+                  <h3 className="text-2xl font-black text-zinc-900 tracking-tight">
                     {leader.name}
                   </h3>
-                  <div className="inline-block px-4 py-1.5 bg-zinc-900 text-white rounded-lg text-sm font-bold skew-x-[-10deg]">
+                  <div className="inline-block px-4 py-1.5 bg-red-700 text-white rounded-lg text-md font-bold skew-x-[-10deg]">
                     <span className="block skew-x-[10deg]">{leader.designation}</span>
                   </div>
                 </div>
@@ -98,9 +96,8 @@ const Leadership = () => {
                     className="w-full h-auto opacity-80 mix-blend-multiply"
                   />
                 </div>
-                <div className="flex items-center gap-2 text-primary font-bold text-sm group/btn cursor-help">
-                  <span>Official Verification</span>
-                  <Send size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+                <div className="flex items-center gap-2 text-primary font-bold text-sm">
+                  <span>Official Leadership Portfolios</span>
                 </div>
               </div>
             </div>

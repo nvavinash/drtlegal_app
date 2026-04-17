@@ -1,5 +1,6 @@
 require("dotenv").config();
 const express = require("express");
+const path = require("path");
 const cors = require("cors");
 const { connectDB } = require("./config/db");
 
@@ -17,6 +18,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/events", require("./routes/eventRoutes"));
+app.use("/api/members", require("./routes/memberRoutes"));
+
+// Serve uploaded files statically
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Basic Health Check Route
 app.get("/", (req, res) => {

@@ -14,7 +14,6 @@ const Leadership = () => {
       id: "president",
       name: "Sri. SUBBA RAJU N V",
       designation: "President",
-      role: "Lead Representative",
       image: presidentImg,
       message: "Our association is dedicated to providing robust legal support to advocates practicing in the Debt Recovery Tribunals. We strive to maintain the highest standards of professional ethics and facilitate a collaborative environment for legal excellence.",
     },
@@ -22,7 +21,6 @@ const Leadership = () => {
       id: "secretary",
       name: "Sri. RAVINDER V",
       designation: "General Secretary",
-      role: "Administrative Head",
       image: secretaryImg, 
       message: "Communication and transparency are the pillars of our association. We are committed to ensuring that every member has access to the latest updates, digital resources, and support needed for their legal practice.",
     },
@@ -63,9 +61,6 @@ const Leadership = () => {
                 </div>
 
                 <div className="flex-1 space-y-2">
-                  <span className="text-primary font-black text-xs uppercase tracking-[0.3em]">
-                    {leader.role}
-                  </span>
                   <h3 className="text-2xl font-black text-zinc-900 tracking-tight">
                     {leader.name}
                   </h3>
@@ -87,7 +82,7 @@ const Leadership = () => {
               </div>
 
               {/* Footer Signature */}
-              <div className="w-full pt-8 border-t border-zinc-100 flex flex-col md:flex-row items-center justify-between gap-6">
+              {/* <div className="w-full pt-8 border-t border-zinc-100 flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="max-w-[180px]">
                   <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mb-2">Signature</p>
                   <img
@@ -99,7 +94,7 @@ const Leadership = () => {
                 <div className="flex items-center gap-2 text-primary font-bold text-sm">
                   <span>Official Leadership Portfolios</span>
                 </div>
-              </div>
+              </div> */}
             </div>
           </AnimatedCard>
         ))}

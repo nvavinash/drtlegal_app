@@ -61,7 +61,7 @@ const OfficeBearers = () => {
   return (
     <SectionWrapper id="office-bearers" className="bg-white">
       <div className="mb-16 text-center">
-        <h2 className="text-3xl md:text-4xl font-bold text-zinc-900 mb-4 tracking-tight">Our Office Bearers</h2>
+        <h2 className="text-2xl md:text-3xl font-bold text-zinc-900 mb-4 tracking-tight">Our Office Bearers</h2>
         <div className="w-20 h-1.5 bg-primary/20 mx-auto rounded-full mb-6" />
         <p className="text-zinc-500 max-w-2xl mx-auto text-lg">
           Dedicated leadership committed to representing the interests of our members 
@@ -69,7 +69,7 @@ const OfficeBearers = () => {
         </p>
       </div>
 
-      <div className="flex flex-wrap justify-center gap-8 max-w-6xl mx-auto">
+      <div className="flex flex-wrap justify-center gap-8 max-w-8xl mx-auto">
         {officeBearers.map((bearer) => (
           <AnimatedCard 
             key={bearer.id} 
@@ -105,12 +105,12 @@ const OfficeBearers = () => {
                 </p>
               </div>
 
-              <div className="mt-6 pt-6 border-t border-zinc-200/60 transition-colors">
+              {/* <div className="mt-6 pt-6 border-t border-zinc-200/60 transition-colors">
                 <div className="flex flex-col gap-1.5">
                   <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Experience</span>
                   <span className="text-sm font-bold text-zinc-700">{bearer.experience}</span>
                 </div>
-              </div>
+              </div> */}
             </CardContent>
           </AnimatedCard>
         ))}

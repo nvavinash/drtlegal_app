@@ -168,7 +168,7 @@ const MeetingSection = () => {
               key={court.id}
               className="group relative overflow-hidden border-none shadow-xl bg-white transition-all duration-500 hover:-translate-y-2"
             >
-              <div className={`absolute top-0 left-0 w-2 h-full ${court.accent} rounded-l-lg`} />
+              <div className={`absolute top-0 left-0 w-2 h-full bg-primary rounded-l-lg`} />
               
               <div className="p-8 flex flex-col gap-6 items-center text-center">
                 {/* Judge Image */}
@@ -185,7 +185,7 @@ const MeetingSection = () => {
                 {/* Info & Button */}
                 <div className="space-y-4 w-full">
                   <div>
-                    <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase ${court.accent} text-white mb-3`}>
+                    <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase bg-primary text-white mb-3`}>
                       {court.name}
                     </span>
                     <h3 className="text-xl font-bold text-zinc-900 leading-tight mb-1">
@@ -200,7 +200,7 @@ const MeetingSection = () => {
                     <Button
                       className={`w-full py-6 rounded-xl font-bold flex items-center justify-center gap-3 transition-all duration-300 ${
                         court.link 
-                          ? `${court.accent} hover:opacity-90 text-white shadow-lg ${court.shadow}` 
+                          ? `bg-primary hover:opacity-90 text-white shadow-lg ` 
                           : 'bg-zinc-200 text-zinc-400 cursor-not-allowed'
                       }`}
                       onClick={() => court.link && window.open(court.link, "_blank")}

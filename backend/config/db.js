@@ -1,18 +1,23 @@
 const mongoose = require("mongoose");
 
+let isConnected = false;
+
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000, // timeout faster
     });
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    isConnected = true;
+    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    console.error(`\n[ERROR] MongoDB Connection Failed: ${error.message}`);
-    console.error(`[TIP] Make sure MongoDB is running on your system (port 27017).`);
-    console.error(`      If you are using a cloud URI, check your .env file.`);
-    process.exit(1);
+    isConnected = false;
+    console.error(`\n⚠️  [WARNING] MongoDB Connection Failed: ${error.message}`);
+    console.error(`[TIP] Make sure MongoDB is running on port 27017, or update MONGO_URI in .env`);
+    console.error(`[INFO] Server will still start - fallback admin auth is enabled.\n`);
+    // Do NOT call process.exit() - let server continue
   }
 };
 
-module.exports = connectDB;
+const getIsConnected = () => isConnected;
+
+module.exports = { connectDB, getIsConnected };

@@ -4,7 +4,8 @@ const User = require("./models/User");
 
 // Initial Admin Configuration
 // You can change this email before running the script
-const adminEmail = "admin@legalassoc.com";
+// const adminEmail = "admin@legalassoc.com";
+const adminEmail = process.env.ADMIN_EMAIL;
 
 const seedAdminUser = async () => {
   try {

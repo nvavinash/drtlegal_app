@@ -17,19 +17,31 @@ import {
   X,
   Clock,
   MapPin,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Check,
+  Ban,
+  Eye,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import axios from "axios";
 import { getEvents, createEvent, updateEvent, deleteEvent } from "@/api/events";
+import { getAllMembersAdmin, updateMember, deleteMember, downloadMemberPdf } from "@/api/members";
 import { format, parseISO } from "date-fns";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("members"); // members, links, events
   const [users, setUsers] = useState([]);
+  const [memberApplications, setMemberApplications] = useState([]);
+  const [membersLoading, setMembersLoading] = useState(false);
+  const [memberFilter, setMemberFilter] = useState("all"); // all | Pending | Approved | Rejected
+  const [expandedMember, setExpandedMember] = useState(null);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [virtualLinks, setVirtualLinks] = useState({ drat_link: "", drt1_link: "", drt2_link: "" });
+  const [virtualLinks, setVirtualLinks] = useState({ 
+    drat_link: "", drt1_link: "", drt2_link: "", upi_id: "", upi_payee: "" 
+  });
   const [updating, setUpdating] = useState(false);
   const [status, setStatus] = useState("");
 
@@ -71,6 +83,8 @@ export default function AdminDashboard() {
           drat_link: linksRes.data.drat_link || "",
           drt1_link: linksRes.data.drt1_link || "",
           drt2_link: linksRes.data.drt2_link || "",
+          upi_id: linksRes.data.upi_id || "",
+          upi_payee: linksRes.data.upi_payee || "",
         });
         setEvents(eventsData);
       } catch (err) {
@@ -85,6 +99,69 @@ export default function AdminDashboard() {
 
     fetchData();
   }, [navigate]);
+
+  // Fetch member applications when tab is active
+  useEffect(() => {
+    if (activeTab === "members" && token) {
+      fetchMemberApplications();
+    }
+  }, [activeTab]);
+
+  const fetchMemberApplications = async () => {
+    setMembersLoading(true);
+    try {
+      const data = await getAllMembersAdmin(token);
+      setMemberApplications(data);
+    } catch (err) {
+      console.error("Failed to fetch member applications", err);
+    } finally {
+      setMembersLoading(false);
+    }
+  };
+
+  const handleMemberStatus = async (id, newStatus) => {
+    try {
+      await updateMember(id, { status: newStatus }, token);
+      setMemberApplications((prev) =>
+        prev.map((m) => (m._id === id ? { ...m, status: newStatus } : m))
+      );
+    } catch (err) {
+      console.error("Failed to update member status", err);
+      alert("Failed to update status. Try again.");
+    }
+  };
+
+  const handleDeleteMember = async (id) => {
+    if (!window.confirm("Delete this member application permanently?")) return;
+    try {
+      await deleteMember(id, token);
+      setMemberApplications((prev) => prev.filter((m) => m._id !== id));
+    } catch (err) {
+      console.error("Failed to delete member", err);
+    }
+  };
+
+  const handleDownloadPdf = async (id) => {
+    try {
+      await downloadMemberPdf(id, token);
+    } catch (err) {
+      console.error("Failed to download PDF", err);
+      alert("Failed to download PDF. Please try again.");
+    }
+  };
+
+  const filteredApplications = memberFilter === "all"
+    ? memberApplications
+    : memberApplications.filter((m) => m.status === memberFilter);
+
+  const statusBadge = (s) => {
+    const map = {
+      Pending:  "bg-amber-50 text-amber-700 border border-amber-200",
+      Approved: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+      Rejected: "bg-rose-50 text-rose-700 border border-rose-200",
+    };
+    return map[s] ?? "bg-zinc-100 text-zinc-600";
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -223,52 +300,152 @@ export default function AdminDashboard() {
         {activeTab === "members" && (
           <Card className="bg-white border-zinc-100 shadow-sm rounded-3xl overflow-hidden">
             <CardHeader className="border-b border-zinc-50 p-8">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <CardTitle className="text-xl font-bold">Registered Members</CardTitle>
-                  <CardDescription className="text-sm font-medium">A list of all users and administrators within the platform.</CardDescription>
+                  <CardTitle className="text-xl font-bold">Membership Applications</CardTitle>
+                  <CardDescription className="text-sm font-medium">
+                    Review and approve/reject incoming membership applications.
+                  </CardDescription>
                 </div>
-                <Button className="bg-primary text-white hover:bg-primary/90 rounded-xl px-6">
-                  <Plus className="w-4 h-4 mr-2" /> Add Member
-                </Button>
+                {/* Filter Tabs */}
+                <div className="flex items-center gap-1 bg-zinc-50 rounded-xl p-1 border border-zinc-100">
+                  {["all", "Pending", "Approved", "Rejected"].map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => setMemberFilter(f)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all ${
+                        memberFilter === f
+                          ? "bg-white shadow text-zinc-900 border border-zinc-200"
+                          : "text-zinc-400 hover:text-zinc-700"
+                      }`}
+                    >
+                      {f === "all" ? `All (${memberApplications.length})` : `${f} (${memberApplications.filter(m => m.status === f).length})`}
+                    </button>
+                  ))}
+                </div>
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              {loading ? (
-                <div className="text-center py-20 text-zinc-400 font-medium">Loading members data...</div>
+              {membersLoading ? (
+                <div className="text-center py-20 text-zinc-400 font-medium">Loading applications...</div>
+              ) : filteredApplications.length === 0 ? (
+                <div className="text-center py-20 text-zinc-400 font-medium">No applications found.</div>
               ) : (
                 <Table>
                   <TableHeader className="bg-zinc-50/50">
                     <TableRow className="border-zinc-50">
-                      <TableHead className="px-8 py-5 text-xs font-bold uppercase tracking-wider text-zinc-400">Email Address</TableHead>
-                      <TableHead className="py-5 text-xs font-bold uppercase tracking-wider text-zinc-400">Role</TableHead>
-                      <TableHead className="py-5 text-xs font-bold uppercase tracking-wider text-zinc-400">Joined Date</TableHead>
+                      <TableHead className="px-8 py-5 text-xs font-bold uppercase tracking-wider text-zinc-400">Applicant</TableHead>
+                      <TableHead className="py-5 text-xs font-bold uppercase tracking-wider text-zinc-400">Enrollment No.</TableHead>
+                      <TableHead className="py-5 text-xs font-bold uppercase tracking-wider text-zinc-400">Contact</TableHead>
+                      <TableHead className="py-5 text-xs font-bold uppercase tracking-wider text-zinc-400">Membership</TableHead>
+                      <TableHead className="py-5 text-xs font-bold uppercase tracking-wider text-zinc-400">Payment</TableHead>
+                      <TableHead className="py-5 text-xs font-bold uppercase tracking-wider text-zinc-400">Status</TableHead>
+                      <TableHead className="pr-8 py-5 text-right text-xs font-bold uppercase tracking-wider text-zinc-400">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {users.length > 0 ? (
-                      users.map((user) => (
-                        <TableRow key={user._id} className="border-zinc-50 hover:bg-zinc-50/30 transition-colors">
-                          <TableCell className="px-8 py-6 font-bold text-zinc-900">{user.email}</TableCell>
-                          <TableCell className="py-6">
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
-                              user.role === 'admin' 
-                                ? 'bg-rose-50 text-rose-600 border border-rose-100' 
-                                : 'bg-emerald-50 text-emerald-600 border border-emerald-100'
-                            }`}>
-                              {user.role}
+                    {filteredApplications.map((m) => (
+                      <>
+                        <TableRow key={m._id} className="border-zinc-50 hover:bg-zinc-50/30 transition-colors">
+                          <TableCell className="px-8 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-full bg-zinc-100 overflow-hidden flex-shrink-0 border border-zinc-200">
+                                {m.photo ? (
+                                  <img src={`http://localhost:5000${m.photo}`} alt={m.name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-xs font-bold text-zinc-500">
+                                    {m.name?.charAt(0)}
+                                  </div>
+                                )}
+                              </div>
+                              <div>
+                                <div className="font-semibold text-zinc-900 text-sm">{m.name}</div>
+                                <div className="text-xs text-zinc-400">{m.gender || "—"}</div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4 font-mono text-xs text-zinc-600">{m.enrollmentNumber || "—"}</TableCell>
+                          <TableCell className="py-4">
+                            <div className="text-sm text-zinc-700">{m.phone}</div>
+                            <div className="text-xs text-zinc-400">{m.email || "—"}</div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full text-[10px] font-bold">{m.membershipType || "NORMAL"}</span>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="text-xs text-zinc-700 font-medium">₹{m.amountPaid || "—"}</div>
+                            <div className="text-xs text-zinc-400 font-mono truncate max-w-[100px]">{m.transactionNumber || "—"}</div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusBadge(m.status)}`}>
+                              {m.status}
                             </span>
                           </TableCell>
-                          <TableCell className="py-6 text-zinc-500 font-medium">
-                            {format(parseISO(user.createdAt), 'MMM d, yyyy')}
+                          <TableCell className="pr-8 py-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => setExpandedMember(expandedMember === m._id ? null : m._id)}
+                                className="h-8 w-8 flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition"
+                                title="View Details"
+                              >
+                                {expandedMember === m._id ? <ChevronUp size={15} /> : <Eye size={15} />}
+                              </button>
+                              <button
+                                onClick={() => handleDownloadPdf(m._id)}
+                                className="h-8 w-8 flex items-center justify-center rounded-lg text-blue-500 hover:text-blue-700 hover:bg-blue-50 transition"
+                                title="Download PDF Form"
+                              >
+                                <Save size={15} />
+                              </button>
+                              {m.status !== "Approved" && (
+                                <button
+                                  onClick={() => handleMemberStatus(m._id, "Approved")}
+                                  className="h-8 w-8 flex items-center justify-center rounded-lg text-emerald-600 hover:bg-emerald-50 transition"
+                                  title="Approve"
+                                >
+                                  <Check size={15} />
+                                </button>
+                              )}
+                              {m.status !== "Rejected" && (
+                                <button
+                                  onClick={() => handleMemberStatus(m._id, "Rejected")}
+                                  className="h-8 w-8 flex items-center justify-center rounded-lg text-amber-600 hover:bg-amber-50 transition"
+                                  title="Reject"
+                                >
+                                  <Ban size={15} />
+                                </button>
+                              )}
+                              <button
+                                onClick={() => handleDeleteMember(m._id)}
+                                className="h-8 w-8 flex items-center justify-center rounded-lg text-rose-400 hover:bg-rose-50 transition"
+                                title="Delete"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
                           </TableCell>
                         </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={3} className="text-center py-20 text-zinc-400">No members found.</TableCell>
-                      </TableRow>
-                    )}
+                        {/* Expanded row */}
+                        {expandedMember === m._id && (
+                          <TableRow className="bg-zinc-50/50 border-zinc-100">
+                            <TableCell colSpan={7} className="px-8 py-5">
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                <div><span className="text-xs text-zinc-400 block">Address</span><span className="text-zinc-700">{m.address || "—"}</span></div>
+                                <div><span className="text-xs text-zinc-400 block">State</span><span className="text-zinc-700">{m.state || "—"}</span></div>
+                                <div><span className="text-xs text-zinc-400 block">DOB</span><span className="text-zinc-700">{m.dob || "—"}</span></div>
+                                <div><span className="text-xs text-zinc-400 block">Blood Group</span><span className="text-zinc-700">{m.bloodGroup || "—"}</span></div>
+                                <div><span className="text-xs text-zinc-400 block">Enrollment Date</span><span className="text-zinc-700">{m.enrollmentDate || "—"}</span></div>
+                                <div><span className="text-xs text-zinc-400 block">Membership Date</span><span className="text-zinc-700">{m.membershipDate || "—"}</span></div>
+                                <div><span className="text-xs text-zinc-400 block">Membership Fee</span><span className="text-zinc-700">₹{m.membershipFee || "—"}</span></div>
+                                <div><span className="text-xs text-zinc-400 block">Payment Time</span><span className="text-zinc-700">{m.paymentTime || "—"}</span></div>
+                                <div className="col-span-2"><span className="text-xs text-zinc-400 block">Transaction No.</span><span className="font-mono text-zinc-700">{m.transactionNumber || "—"}</span></div>
+                                <div><span className="text-xs text-zinc-400 block">Applied</span><span className="text-zinc-700">{m.createdAt ? format(parseISO(m.createdAt), 'MMM d, yyyy') : "—"}</span></div>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </>
+                    ))}
                   </TableBody>
                 </Table>
               )}
@@ -285,42 +462,73 @@ export default function AdminDashboard() {
                   <div className="bg-amber-100 p-2 rounded-xl">
                     <Video className="w-5 h-5 text-amber-600" />
                   </div>
-                  <CardTitle className="text-xl font-bold">Meeting Links</CardTitle>
+                  <CardTitle className="text-xl font-bold">Settings & Links</CardTitle>
                 </div>
-                <CardDescription className="text-sm font-medium">Update the virtual hearing links that appear on the homepage.</CardDescription>
+                <CardDescription className="text-sm font-medium">Update the virtual hearing links and payment integration settings.</CardDescription>
               </CardHeader>
               <CardContent className="p-8">
                 <form onSubmit={handleUpdateLinks} className="space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">DRAT (Appellate Tribunal) Link</label>
-                    <input
-                      type="url"
-                      className="w-full p-4 bg-zinc-50 border border-zinc-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-amber-500/20 outline-none transition-all placeholder:text-zinc-300"
-                      placeholder="https://..."
-                      value={virtualLinks.drat_link}
-                      onChange={(e) => setVirtualLinks({ ...virtualLinks, drat_link: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">DRT-1 Link</label>
-                      <input
-                        type="url"
-                        className="w-full p-4 bg-zinc-50 border border-zinc-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-zinc-900/10 outline-none transition-all placeholder:text-zinc-300"
-                        placeholder="https://..."
-                        value={virtualLinks.drt1_link}
-                        onChange={(e) => setVirtualLinks({ ...virtualLinks, drt1_link: e.target.value })}
-                      />
+                  <div className="border-b border-zinc-100 pb-4 mb-4">
+                    <h3 className="text-sm font-bold text-zinc-900 mb-4">Virtual Hearing Links</h3>
+                    <div className="space-y-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">DRAT (Appellate Tribunal) Link</label>
+                        <input
+                          type="url"
+                          className="w-full p-4 bg-zinc-50 border border-zinc-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-amber-500/20 outline-none transition-all placeholder:text-zinc-300"
+                          placeholder="https://..."
+                          value={virtualLinks.drat_link}
+                          onChange={(e) => setVirtualLinks({ ...virtualLinks, drat_link: e.target.value })}
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">DRT-1 Link</label>
+                          <input
+                            type="url"
+                            className="w-full p-4 bg-zinc-50 border border-zinc-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-zinc-900/10 outline-none transition-all placeholder:text-zinc-300"
+                            placeholder="https://..."
+                            value={virtualLinks.drt1_link}
+                            onChange={(e) => setVirtualLinks({ ...virtualLinks, drt1_link: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">DRT-2 Link</label>
+                          <input
+                            type="url"
+                            className="w-full p-4 bg-zinc-50 border border-zinc-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-zinc-900/10 outline-none transition-all placeholder:text-zinc-300"
+                            placeholder="https://..."
+                            value={virtualLinks.drt2_link}
+                            onChange={(e) => setVirtualLinks({ ...virtualLinks, drt2_link: e.target.value })}
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">DRT-2 Link</label>
-                      <input
-                        type="url"
-                        className="w-full p-4 bg-zinc-50 border border-zinc-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-zinc-900/10 outline-none transition-all placeholder:text-zinc-300"
-                        placeholder="https://..."
-                        value={virtualLinks.drt2_link}
-                        onChange={(e) => setVirtualLinks({ ...virtualLinks, drt2_link: e.target.value })}
-                      />
+                  </div>
+
+                  <div className="pb-4">
+                    <h3 className="text-sm font-bold text-zinc-900 mb-4">UPI Payment Settings</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">UPI ID</label>
+                        <input
+                          type="text"
+                          className="w-full p-4 bg-zinc-50 border border-zinc-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-zinc-900/10 outline-none transition-all placeholder:text-zinc-300"
+                          placeholder="e.g. 8299177208@upi"
+                          value={virtualLinks.upi_id}
+                          onChange={(e) => setVirtualLinks({ ...virtualLinks, upi_id: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">Payee Name</label>
+                        <input
+                          type="text"
+                          className="w-full p-4 bg-zinc-50 border border-zinc-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-zinc-900/10 outline-none transition-all placeholder:text-zinc-300"
+                          placeholder="e.g. Avinash"
+                          value={virtualLinks.upi_payee}
+                          onChange={(e) => setVirtualLinks({ ...virtualLinks, upi_payee: e.target.value })}
+                        />
+                      </div>
                     </div>
                   </div>
                   <Button 

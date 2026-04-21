@@ -8,40 +8,30 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Set storage engine
+// Storage engine
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    // Prefix filename with timestamp to prevent overwriting
-    cb(null, Date.now() + path.extname(file.originalname));
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + path.extname(file.originalname).toLowerCase());
   },
 });
 
-// Check file type (optional but recommended for security)
-function checkFileType(file, cb) {
-  // Allowed ext
-  const filetypes = /jpeg|jpg|png|pdf/;
-  // Check ext
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  // Check mime
-  const mimetype = filetypes.test(file.mimetype);
-
-  if (mimetype && extname) {
-    return cb(null, true);
+// File filter: JPEG only
+const fileFilter = (req, file, cb) => {
+  const isJpeg =
+    file.mimetype === "image/jpeg" || file.mimetype === "image/jpg";
+  if (isJpeg) {
+    cb(null, true);
   } else {
-    cb(new Error("Error: Images and PDFs Only!"));
+    cb(new Error("Only JPEG/JPG images are allowed."));
   }
-}
+};
 
-// Initialize multer
 const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5000000 }, // 5MB limit
-  fileFilter: function (req, file, cb) {
-    checkFileType(file, cb);
-  },
+  storage,
+  limits: { fileSize: 100 * 1024 }, // 100 KB
+  fileFilter,
 });
 
 module.exports = upload;

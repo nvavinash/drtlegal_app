@@ -4,16 +4,15 @@ import SectionWrapper from "../components/SectionWrapper";
 import { getEventById } from "../api/events";
 import { 
   Calendar, 
-  Clock, 
-  MapPin, 
   ArrowLeft, 
   Share2, 
   CalendarPlus, 
-  Map as MapIcon,
-  ChevronRight
+  FileText,
+  ChevronRight,
+  ExternalLink
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
-import { Button } from "@/components/ui/button";
+import { Button } from "../components/ui/button";
 
 const EventDetails = () => {
   const { id } = useParams();
@@ -58,7 +57,7 @@ const EventDetails = () => {
 
   const addToGoogleCalendar = () => {
     const start = format(parseISO(event.date), "yyyyMMdd");
-    const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${start}/${start}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}`;
+    const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${start}/${start}&details=${encodeURIComponent(event.description)}`;
     window.open(url, '_blank');
   };
 
@@ -91,8 +90,10 @@ const EventDetails = () => {
             {/* Event Header & Content */}
             <div className="lg:col-span-8">
               <div className="mb-6">
-                <span className="px-4 py-1.5 bg-zinc-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-full">
-                  {event.category}
+                <span className={`px-4 py-1.5 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-full ${
+                  event.type === 'event' ? 'bg-red-600' : 'bg-blue-600'
+                }`}>
+                  {event.type}
                 </span>
               </div>
               
@@ -100,21 +101,23 @@ const EventDetails = () => {
                 {event.title}
               </h1>
 
-              {event.imageUrl && (
-                <div className="rounded-[40px] overflow-hidden mb-12 shadow-2xl shadow-zinc-200">
-                  <img src={event.imageUrl} alt={event.title} className="w-full aspect-video object-cover" />
-                </div>
-              )}
-
               <div className="prose prose-zinc max-w-none">
-                <h3 className="text-2xl font-bold text-zinc-900 mb-6">About this event</h3>
-                <div className="text-zinc-600 text-lg leading-relaxed whitespace-pre-wrap">
+                <div className="text-zinc-600 text-lg leading-relaxed whitespace-pre-wrap mb-10">
                   {event.description}
                 </div>
                 
-                {event.details && (
-                  <div className="mt-12 p-10 bg-zinc-50 rounded-[32px] border border-zinc-100 italic text-zinc-600">
-                    {event.details}
+                {event.pdf && (
+                  <div className="mt-8">
+                    <h3 className="text-2xl font-bold text-zinc-900 mb-6 flex items-center gap-3">
+                      <FileText className="text-primary" /> Attached Document
+                    </h3>
+                    <div className="bg-zinc-50 border border-zinc-200 rounded-[32px] overflow-hidden shadow-inner">
+                      <iframe 
+                        src={`http://localhost:5000${event.pdf}`} 
+                        className="w-full aspect-[1/1.4] md:aspect-[4/3] border-0" 
+                        title="Document Viewer"
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -133,39 +136,28 @@ const EventDetails = () => {
                       </div>
                       <div>
                         <p className="text-xs font-bold text-zinc-400 uppercase tracking-tight mb-1">Date</p>
-                        <p className="text-zinc-900 font-bold">{format(parseISO(event.date), 'EEEE, MMMM d, yyyy')}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-5">
-                      <div className="w-12 h-12 bg-primary/5 text-primary rounded-2xl flex items-center justify-center shrink-0">
-                        <Clock size={22} />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-zinc-400 uppercase tracking-tight mb-1">Time</p>
-                        <p className="text-zinc-900 font-bold">{event.time}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-5">
-                      <div className="w-12 h-12 bg-primary/5 text-primary rounded-2xl flex items-center justify-center shrink-0">
-                        <MapPin size={22} />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-zinc-400 uppercase tracking-tight mb-1">Location</p>
-                        <p className="text-zinc-900 font-bold">{event.location}</p>
+                        <p className="text-zinc-900 font-bold">{event.date ? format(parseISO(event.date), 'EEEE, MMMM d, yyyy') : "—"}</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="mt-12 space-y-3">
-                    <Button 
-                      onClick={addToGoogleCalendar}
-                      className="w-full bg-zinc-900 hover:bg-zinc-800 text-white py-7 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-zinc-200"
-                    >
-                      <CalendarPlus size={20} />
-                      Add to Calendar
-                    </Button>
+                    {event.pdf && (
+                      <a href={`http://localhost:5000${event.pdf}`} target="_blank" rel="noreferrer" className="w-full bg-zinc-900 hover:bg-zinc-800 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-zinc-200 transition">
+                        <ExternalLink size={20} />
+                        Download PDF
+                      </a>
+                    )}
+                    {event.type === 'event' && (
+                      <Button 
+                        onClick={addToGoogleCalendar}
+                        className="w-full border-zinc-200 hover:bg-zinc-50 py-7 rounded-2xl font-bold flex items-center justify-center gap-2 transition"
+                        variant="outline"
+                      >
+                        <CalendarPlus size={20} />
+                        Add to Calendar
+                      </Button>
+                    )}
                     <Button 
                       variant="outline"
                       className="w-full border-zinc-200 hover:bg-zinc-50 py-7 rounded-2xl font-bold flex items-center justify-center gap-2"

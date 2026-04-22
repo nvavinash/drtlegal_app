@@ -52,12 +52,9 @@ export default function AdminDashboard() {
     title: "",
     description: "",
     date: "",
-    time: "",
-    location: "",
-    imageUrl: "",
-    category: "Other",
-    details: ""
+    type: "event"
   });
+  const [pdfFile, setPdfFile] = useState(null);
 
   const token = localStorage.getItem("token");
 
@@ -191,10 +188,19 @@ export default function AdminDashboard() {
     e.preventDefault();
     setUpdating(true);
     try {
+      const fd = new FormData();
+      fd.append("title", eventFormData.title);
+      fd.append("description", eventFormData.description);
+      fd.append("date", eventFormData.date);
+      fd.append("type", eventFormData.type);
+      if (pdfFile) {
+        fd.append("pdf", pdfFile);
+      }
+
       if (editingEvent) {
-        await updateEvent(editingEvent._id, eventFormData, token);
+        await updateEvent(editingEvent._id, fd, token);
       } else {
-        await createEvent(eventFormData, token);
+        await createEvent(fd, token);
       }
       const updatedEvents = await getEvents();
       setEvents(updatedEvents);
@@ -224,13 +230,10 @@ export default function AdminDashboard() {
     setEventFormData({
       title: event.title,
       description: event.description || "",
-      date: format(parseISO(event.date), "yyyy-MM-dd"),
-      time: event.time || "",
-      location: event.location || "",
-      imageUrl: event.imageUrl || "",
-      category: event.category || "Other",
-      details: event.details || ""
+      date: event.date ? format(parseISO(event.date), "yyyy-MM-dd") : "",
+      type: event.type || "event"
     });
+    setPdfFile(null);
     setIsEventModalOpen(true);
   };
 
@@ -240,12 +243,9 @@ export default function AdminDashboard() {
       title: "",
       description: "",
       date: "",
-      time: "",
-      location: "",
-      imageUrl: "",
-      category: "Other",
-      details: ""
+      type: "event"
     });
+    setPdfFile(null);
   };
 
   return (
@@ -561,14 +561,14 @@ export default function AdminDashboard() {
               <CardHeader className="border-b border-zinc-50 p-8">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-xl font-bold">Event Management</CardTitle>
+                    <CardTitle className="text-xl font-bold">Event/Notice Management</CardTitle>
                     <CardDescription className="text-sm font-medium">Create and manage upcoming activities and seminars.</CardDescription>
                   </div>
                   <Button 
                     onClick={() => { resetEventForm(); setIsEventModalOpen(true); }}
                     className="bg-zinc-900 text-white hover:bg-zinc-800 rounded-xl px-6"
                   >
-                    <Plus className="w-4 h-4 mr-2" /> Create Event
+                    <Plus className="w-4 h-4 mr-2" /> Create Event/Notice
                   </Button>
                 </div>
               </CardHeader>
@@ -579,9 +579,9 @@ export default function AdminDashboard() {
                   <Table>
                     <TableHeader className="bg-zinc-50/50">
                       <TableRow className="border-zinc-50">
-                        <TableHead className="px-8 py-5 text-xs font-bold uppercase tracking-wider text-zinc-400">Event Info</TableHead>
-                        <TableHead className="py-5 text-xs font-bold uppercase tracking-wider text-zinc-400">Date & Time</TableHead>
-                        <TableHead className="py-5 text-xs font-bold uppercase tracking-wider text-zinc-400">Category</TableHead>
+                        <TableHead className="px-8 py-5 text-xs font-bold uppercase tracking-wider text-zinc-400">Event/Notice Info</TableHead>
+                        <TableHead className="py-5 text-xs font-bold uppercase tracking-wider text-zinc-400">Date</TableHead>
+                        <TableHead className="py-5 text-xs font-bold uppercase tracking-wider text-zinc-400">Type</TableHead>
                         <TableHead className="pr-8 py-5 text-right text-xs font-bold uppercase tracking-wider text-zinc-400">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -591,30 +591,20 @@ export default function AdminDashboard() {
                           <TableRow key={event._id} className="border-zinc-50 hover:bg-zinc-50/30 transition-colors">
                             <TableCell className="px-8 py-6">
                               <div className="flex items-center gap-4">
-                                {event.imageUrl ? (
-                                  <img src={event.imageUrl} className="w-12 h-12 rounded-xl object-cover" alt="" />
-                                ) : (
-                                  <div className="w-12 h-12 bg-zinc-100 rounded-xl flex items-center justify-center text-zinc-400">
-                                    <ImageIcon size={20} />
-                                  </div>
-                                )}
                                 <div>
                                   <div className="font-bold text-zinc-900">{event.title}</div>
-                                  <div className="text-xs text-zinc-400 font-medium flex items-center gap-1">
-                                    <MapPin size={10} /> {event.location}
+                                  <div className="text-xs text-zinc-400 font-medium">
+                                    {event.description}
                                   </div>
                                 </div>
                               </div>
                             </TableCell>
                             <TableCell className="py-6">
-                              <div className="text-sm font-bold text-zinc-900">{format(parseISO(event.date), 'MMM d, yyyy')}</div>
-                              <div className="text-xs text-zinc-400 font-medium flex items-center gap-1">
-                                <Clock size={10} /> {event.time}
-                              </div>
+                              <div className="text-sm font-bold text-zinc-900">{event.date ? format(parseISO(event.date), 'MMM d, yyyy') : "—"}</div>
                             </TableCell>
                             <TableCell className="py-6">
                               <span className="bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
-                                {event.category}
+                                {event.type}
                               </span>
                             </TableCell>
                             <TableCell className="pr-8 py-6 text-right">
@@ -641,7 +631,7 @@ export default function AdminDashboard() {
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={4} className="text-center py-20 text-zinc-400 font-medium">No events created yet.</TableCell>
+                          <TableCell colSpan={4} className="text-center py-20 text-zinc-400 font-medium">No events/notices created yet.</TableCell>
                         </TableRow>
                       )}
                     </TableBody>
@@ -659,8 +649,8 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-[32px] w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl relative animate-in zoom-in-95 duration-300">
             <div className="p-8 border-b border-zinc-100 flex items-center justify-between sticky top-0 bg-white z-10">
               <div>
-                <h2 className="text-2xl font-bold text-zinc-900">{editingEvent ? 'Edit Event' : 'Create New Event'}</h2>
-                <p className="text-sm text-zinc-500 font-medium">Fill in the details to schedule association activities.</p>
+                <h2 className="text-2xl font-bold text-zinc-900">{editingEvent ? 'Edit Item' : 'Create New Item'}</h2>
+                <p className="text-sm text-zinc-500 font-medium">Fill in the details for your new Event or Notice.</p>
               </div>
               <button onClick={() => setIsEventModalOpen(false)} className="h-10 w-10 flex items-center justify-center rounded-xl bg-zinc-50 text-zinc-400 hover:text-zinc-900 transition-colors">
                 <X size={20} />
@@ -670,7 +660,7 @@ export default function AdminDashboard() {
             <div className="p-8 overflow-y-auto max-h-[calc(90vh-140px)]">
               <form onSubmit={handleEventSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-400">Event Title</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-400">Event/Notice Title</label>
                   <input
                     required
                     type="text"
@@ -693,82 +683,43 @@ export default function AdminDashboard() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-400">Time</label>
-                    <input
-                      required
-                      type="text"
-                      className="w-full p-4 bg-zinc-50 border border-zinc-100 rounded-2xl text-sm font-bold placeholder:text-zinc-300 outline-none focus:ring-2 focus:ring-zinc-900/5 transition-all"
-                      placeholder="e.g. 10:00 AM - 1:00 PM"
-                      value={eventFormData.time}
-                      onChange={(e) => setEventFormData({ ...eventFormData, time: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-400">Location</label>
-                    <input
-                      required
-                      type="text"
-                      className="w-full p-4 bg-zinc-50 border border-zinc-100 rounded-2xl text-sm font-bold placeholder:text-zinc-300 outline-none focus:ring-2 focus:ring-zinc-900/5 transition-all"
-                      placeholder="e.g. High Court Hall, Hyderabad"
-                      value={eventFormData.location}
-                      onChange={(e) => setEventFormData({ ...eventFormData, location: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-400">Category</label>
+                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-400">Type</label>
                     <select
                       className="w-full p-4 bg-zinc-50 border border-zinc-100 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-zinc-900/5 transition-all"
-                      value={eventFormData.category}
-                      onChange={(e) => setEventFormData({ ...eventFormData, category: e.target.value })}
+                      value={eventFormData.type}
+                      onChange={(e) => setEventFormData({ ...eventFormData, type: e.target.value })}
                     >
-                      <option value="Seminar">Seminar</option>
-                      <option value="Webinar">Webinar</option>
-                      <option value="Meeting">Meeting</option>
-                      <option value="Conference">Conference</option>
-                      <option value="Social">Social</option>
-                      <option value="Other">Other</option>
+                      <option value="event">Event</option>
+                      <option value="notice">Notice</option>
                     </select>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-400">Short Description</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-400">Description</label>
                   <textarea
                     required
-                    rows="2"
+                    rows="4"
                     className="w-full p-4 bg-zinc-50 border border-zinc-100 rounded-2xl text-sm font-medium placeholder:text-zinc-300 outline-none focus:ring-2 focus:ring-zinc-900/5 transition-all resize-none"
-                    placeholder="Brief overview for the card list..."
+                    placeholder="Provide details about the event or notice..."
                     value={eventFormData.description}
                     onChange={(e) => setEventFormData({ ...eventFormData, description: e.target.value })}
                   ></textarea>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-400">Detailed Information (Optional)</label>
-                  <textarea
-                    rows="4"
-                    className="w-full p-4 bg-zinc-50 border border-zinc-100 rounded-2xl text-sm font-medium placeholder:text-zinc-300 outline-none focus:ring-2 focus:ring-zinc-900/5 transition-all resize-none"
-                    placeholder="Full details that appear on the event page..."
-                    value={eventFormData.details}
-                    onChange={(e) => setEventFormData({ ...eventFormData, details: e.target.value })}
-                  ></textarea>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-400">Image URL (Optional)</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-400">PDF Document (Optional)</label>
                   <div className="relative">
-                    <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-300" size={18} />
                     <input
-                      type="url"
-                      className="w-full pl-12 pr-4 py-4 bg-zinc-50 border border-zinc-100 rounded-2xl text-sm font-medium placeholder:text-zinc-300 outline-none focus:ring-2 focus:ring-zinc-900/5 transition-all"
-                      placeholder="https://images.unsplash.com/..."
-                      value={eventFormData.imageUrl}
-                      onChange={(e) => setEventFormData({ ...eventFormData, imageUrl: e.target.value })}
+                      type="file"
+                      accept="application/pdf"
+                      className="w-full pl-4 pr-4 py-4 bg-zinc-50 border border-zinc-100 rounded-2xl text-sm font-medium outline-none focus:ring-2 focus:ring-zinc-900/5 transition-all cursor-pointer"
+                      onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
                     />
                   </div>
+                  {editingEvent?.pdf && !pdfFile && (
+                    <p className="text-xs text-zinc-500 mt-1">Current File: {editingEvent.pdf.split('/').pop()}</p>
+                  )}
                 </div>
 
                 <div className="pt-4 pb-8">

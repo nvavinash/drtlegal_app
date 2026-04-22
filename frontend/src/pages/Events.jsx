@@ -29,6 +29,8 @@ const EventsPage = () => {
   }, []);
 
   const filteredEvents = events.filter((event) => {
+    if (event.type !== "event") return false;
+
     const eventDate = parseISO(event.date);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -131,20 +133,11 @@ const EventsPage = () => {
               <div className="grid grid-cols-1 gap-6">
                 {filteredEvents.map((event) => (
                   <AnimatedCard key={event._id} className="overflow-hidden group hover:border-zinc-200 transition-all border border-zinc-100 bg-white">
-                    <Link to={`/events/${event._id}`} className="flex flex-col md:flex-row">
-                      {event.imageUrl && (
-                        <div className="md:w-48 h-48 md:h-auto overflow-hidden shrink-0">
-                          <img 
-                            src={event.imageUrl} 
-                            alt={event.title} 
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                          />
-                        </div>
-                      )}
-                      <div className="flex-1 p-6 md:p-8">
+                    <div className="flex flex-col md:flex-row p-6 md:p-8">
+                      <div className="flex-1">
                         <div className="flex items-center gap-3 mb-4">
-                          <span className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest rounded-full">
-                            {event.category}
+                          <span className="px-3 py-1 bg-red-50 text-red-600 text-[10px] font-bold uppercase tracking-widest rounded-full border border-red-100">
+                            Event
                           </span>
                           <span className="text-xs font-medium text-zinc-400">
                             Added {format(parseISO(event.createdAt), 'MMM d, yyyy')}
@@ -152,29 +145,26 @@ const EventsPage = () => {
                         </div>
                         
                         <h3 className="text-2xl font-extrabold text-zinc-900 mb-3 group-hover:text-primary transition-colors">
-                          {event.title}
+                          <Link to={`/events/${event._id}`}>{event.title}</Link>
                         </h3>
                         
                         <p className="text-zinc-500 mb-8 line-clamp-2 text-sm leading-relaxed">
                           {event.description}
                         </p>
 
-                        <div className="flex flex-wrap items-center gap-6 pt-6 border-t border-zinc-50">
+                        <div className="flex flex-wrap items-center gap-6 pt-6 border-t border-zinc-50 justify-between">
                           <div className="flex items-center gap-2 text-zinc-500 text-xs font-bold uppercase tracking-tight">
                             <Calendar size={14} className="text-zinc-400" />
-                            {format(parseISO(event.date), 'EEEE, MMMM d')}
+                            {format(parseISO(event.date), 'EEEE, MMMM d, yyyy')}
                           </div>
-                          <div className="flex items-center gap-2 text-zinc-500 text-xs font-bold uppercase tracking-tight">
-                            <Clock size={14} className="text-zinc-400" />
-                            {event.time}
-                          </div>
-                          <div className="flex items-center gap-2 text-zinc-500 text-xs font-bold uppercase tracking-tight">
-                            <MapPin size={14} className="text-zinc-400" />
-                            {event.location}
-                          </div>
+                          {event.pdf && (
+                            <a href={`http://localhost:5000${event.pdf}`} target="_blank" rel="noreferrer" className="text-xs font-bold bg-zinc-900 text-white px-4 py-2 rounded-lg hover:bg-zinc-800 transition shadow">
+                              View PDF
+                            </a>
+                          )}
                         </div>
                       </div>
-                    </Link>
+                    </div>
                   </AnimatedCard>
                 ))}
               </div>

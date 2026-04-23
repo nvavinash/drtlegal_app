@@ -24,6 +24,7 @@ const Navbar = () => {
     { name: "Events", path: "/events" },
     { name: "Notices", path: "/notices" },
     { name: "Members List", path: "/members" },
+    { name: "Commissioner List", path: "/commissioners" },
   ];
 
   const handleAdminClick = () => {

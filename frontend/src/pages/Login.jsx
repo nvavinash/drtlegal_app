@@ -37,8 +37,9 @@ export default function Login() {
     try {
       // API call to verify OTP
       const res = await axios.post("http://localhost:5000/api/auth/verify-otp", { email, otp });
-      // Store token
+      // Store token and role
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("role", res.data.role || "member");
       navigate("/admin");
     } catch (err) {
       setError(err.response?.data?.message || "Invalid OTP.");

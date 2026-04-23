@@ -34,6 +34,12 @@ const memberSchema = new mongoose.Schema(
     // File
     photo: { type: String }, // relative path to uploaded photo
 
+    // COP Status (Commissioner of Practice)
+    copStatus: {
+      type: Boolean,
+      default: false,
+    },
+
     // Status
     status: {
       type: String,

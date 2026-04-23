@@ -48,4 +48,13 @@ const adminOnly = (req, res, next) => {
   }
 };
 
-module.exports = { protect, adminOnly };
+// Allows both admin and editor roles
+const editorOrAdmin = (req, res, next) => {
+  if (req.user && (req.user.role === "admin" || req.user.role === "editor")) {
+    next();
+  } else {
+    res.status(403).json({ message: "Not authorized. Editor or Admin role required." });
+  }
+};
+
+module.exports = { protect, adminOnly, editorOrAdmin };

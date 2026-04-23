@@ -22,7 +22,8 @@ import {
   Ban,
   Eye,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Award
 } from "lucide-react";
 import axios from "axios";
 import { getEvents, createEvent, updateEvent, deleteEvent } from "@/api/events";
@@ -128,6 +129,18 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleCopToggle = async (id, currentCop) => {
+    try {
+      await updateMember(id, { copStatus: !currentCop }, token);
+      setMemberApplications((prev) =>
+        prev.map((m) => (m._id === id ? { ...m, copStatus: !currentCop } : m))
+      );
+    } catch (err) {
+      console.error("Failed to toggle COP status", err);
+      alert("Failed to update COP status. Try again.");
+    }
+  };
+
   const handleDeleteMember = async (id) => {
     if (!window.confirm("Delete this member application permanently?")) return;
     try {
@@ -162,6 +175,7 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("role");
     navigate("/");
   };
 
@@ -339,6 +353,7 @@ export default function AdminDashboard() {
                       <TableHead className="py-5 text-xs font-bold uppercase tracking-wider text-zinc-400">Contact</TableHead>
                       <TableHead className="py-5 text-xs font-bold uppercase tracking-wider text-zinc-400">Membership</TableHead>
                       <TableHead className="py-5 text-xs font-bold uppercase tracking-wider text-zinc-400">Payment</TableHead>
+                      <TableHead className="py-5 text-xs font-bold uppercase tracking-wider text-zinc-400">COP</TableHead>
                       <TableHead className="py-5 text-xs font-bold uppercase tracking-wider text-zinc-400">Status</TableHead>
                       <TableHead className="pr-8 py-5 text-right text-xs font-bold uppercase tracking-wider text-zinc-400">Actions</TableHead>
                     </TableRow>
@@ -375,6 +390,17 @@ export default function AdminDashboard() {
                           <TableCell className="py-4">
                             <div className="text-xs text-zinc-700 font-medium">₹{m.amountPaid || "—"}</div>
                             <div className="text-xs text-zinc-400 font-mono truncate max-w-[100px]">{m.transactionNumber || "—"}</div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            {m.copStatus ? (
+                              <span className="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                                COP ✓
+                              </span>
+                            ) : (
+                              <span className="bg-zinc-100 text-zinc-400 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                                —
+                              </span>
+                            )}
                           </TableCell>
                           <TableCell className="py-4">
                             <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusBadge(m.status)}`}>
@@ -416,6 +442,17 @@ export default function AdminDashboard() {
                                 </button>
                               )}
                               <button
+                                onClick={() => handleCopToggle(m._id, m.copStatus)}
+                                className={`h-8 w-8 flex items-center justify-center rounded-lg transition ${
+                                  m.copStatus
+                                    ? "text-amber-500 bg-amber-50 hover:bg-amber-100"
+                                    : "text-zinc-300 hover:text-amber-500 hover:bg-amber-50"
+                                }`}
+                                title={m.copStatus ? "Disable COP" : "Enable COP"}
+                              >
+                                <Award size={15} />
+                              </button>
+                              <button
                                 onClick={() => handleDeleteMember(m._id)}
                                 className="h-8 w-8 flex items-center justify-center rounded-lg text-rose-400 hover:bg-rose-50 transition"
                                 title="Delete"
@@ -428,7 +465,7 @@ export default function AdminDashboard() {
                         {/* Expanded row */}
                         {expandedMember === m._id && (
                           <TableRow className="bg-zinc-50/50 border-zinc-100">
-                            <TableCell colSpan={7} className="px-8 py-5">
+                            <TableCell colSpan={8} className="px-8 py-5">
                               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                                 <div><span className="text-xs text-zinc-400 block">Address</span><span className="text-zinc-700">{m.address || "—"}</span></div>
                                 <div><span className="text-xs text-zinc-400 block">State</span><span className="text-zinc-700">{m.state || "—"}</span></div>
@@ -440,6 +477,7 @@ export default function AdminDashboard() {
                                 <div><span className="text-xs text-zinc-400 block">Payment Time</span><span className="text-zinc-700">{m.paymentTime || "—"}</span></div>
                                 <div className="col-span-2"><span className="text-xs text-zinc-400 block">Transaction No.</span><span className="font-mono text-zinc-700">{m.transactionNumber || "—"}</span></div>
                                 <div><span className="text-xs text-zinc-400 block">Applied</span><span className="text-zinc-700">{m.createdAt ? format(parseISO(m.createdAt), 'MMM d, yyyy') : "—"}</span></div>
+                                <div><span className="text-xs text-zinc-400 block">COP Status</span><span className={`font-bold ${m.copStatus ? 'text-amber-600' : 'text-zinc-400'}`}>{m.copStatus ? 'Enabled ✓' : 'Disabled'}</span></div>
                               </div>
                             </TableCell>
                           </TableRow>

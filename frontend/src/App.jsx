@@ -6,6 +6,7 @@ import Events from "./pages/Events";
 import EventDetails from "./pages/EventDetails";
 import Notices from "./pages/Notices";
 import Members from "./pages/Members";
+import Commissioners from "./pages/Commissioners";
 import Navbar from "./components/Navbar";
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
         <Route path="/events/:id" element={<EventDetails />} />
         <Route path="/notices" element={<Notices />} />
         <Route path="/members" element={<Members />} />
+        <Route path="/commissioners" element={<Commissioners />} />
         
         {/* Auth Routes */}
         <Route path="/login" element={<Login />} />

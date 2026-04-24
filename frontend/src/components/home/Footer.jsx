@@ -7,49 +7,6 @@ const Footer = () => {
     <footer className="bg-zinc-900 text-white">
       {/* Top section: Address + Links + Map */}
       <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-        {/* Column 1: About + Address */}
-        <div className="space-y-6">
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 mb-4">
-              About
-            </h3>
-            <p className="text-sm text-zinc-300 leading-relaxed mb-5">
-              DRT Advocates Association, Hyderabad is the registered body of
-              advocates practising before the Debt Recovery Tribunals and the
-              Debt Recovery Appellate Tribunal in Hyderabad.
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-start gap-3 text-sm text-zinc-400">
-              <MapPin size={15} className="text-primary mt-0.5 flex-shrink-0" />
-              <span className="leading-relaxed">
-                1st Floor, Triveni Complex, Abids,
-                <br />
-                Hyderabad, Telangana – 500001, India
-              </span>
-            </div>
-            <div className="flex items-center gap-3 text-sm text-zinc-400">
-              <Phone size={15} className="text-primary flex-shrink-0" />
-              <a
-                href="tel:+919000000000"
-                className="hover:text-white transition-colors"
-              >
-                +91 90000 00000
-              </a>
-            </div>
-            <div className="flex items-center gap-3 text-sm text-zinc-400">
-              <Mail size={15} className="text-primary flex-shrink-0" />
-              <a
-                href="mailto:info@drtadvocateshyd.in"
-                className="hover:text-white transition-colors"
-              >
-                info@drtadvocateshyd.in
-              </a>
-            </div>
-          </div>
-        </div>
-
         {/* Column 2: Quick Links */}
         <div>
           <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 mb-4">
@@ -109,11 +66,55 @@ const Footer = () => {
                 </a>
               ))}
             </div>
+          </div> */}
+        </div>
+
+        {/* Column 1: About + Address */}
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 mb-4">
+              About
+            </h3>
+            <p className="text-sm text-zinc-300 leading-relaxed mb-5">
+              DRT Advocates Association, Hyderabad is the registered body of
+              advocates practising before the Debt Recovery Tribunals and the
+              Debt Recovery Appellate Tribunal in Hyderabad.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-start gap-3 text-sm text-zinc-400">
+              <MapPin size={15} className="text-primary mt-0.5 flex-shrink-0" />
+              <span className="leading-relaxed">
+                1st Floor, Triveni Complex, Abids,
+                <br />
+                Hyderabad, Telangana – 500001, India
+              </span>
+            </div>
+            <div className="flex items-center gap-3 text-sm text-zinc-400">
+              <Phone size={15} className="text-primary flex-shrink-0" />
+              <a
+                href="tel:+919000000000"
+                className="hover:text-white transition-colors"
+              >
+                +91 90000 00000
+              </a>
+            </div>
+            <div className="flex items-center gap-3 text-sm text-zinc-400">
+              <Mail size={15} className="text-primary flex-shrink-0" />
+              <a
+                href="mailto:info@drtadvocateshyd.in"
+                className="hover:text-white transition-colors"
+              >
+                info@drtadvocateshyd.in
+              </a>
+            </div>
           </div>
         </div>
 
-        {/* Column 3: Map */}
-        </div>
+        {/* social_media_end_here */}
+
+        {/* map_component */}
         <div>
           <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 mb-4">
             Find Us
@@ -124,7 +125,7 @@ const Footer = () => {
               width="100%"
               height="100%"
               loading="lazy"
-              className="border-0 grayscale"
+              className="border-0"
               allowFullScreen
               referrerPolicy="no-referrer-when-downgrade"
               title="DRT Advocates Association Hyderabad"

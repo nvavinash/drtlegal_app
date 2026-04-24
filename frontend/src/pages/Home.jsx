@@ -5,6 +5,7 @@ import Leadership from "../components/home/Leadership";
 import Announcements from "../components/home/Announcements";
 import OfficeBearers from "../components/home/OfficeBearers";
 import QuickLinks from "../components/home/QuickLinks";
+import Footer from "@/components/home/Footer";
 
 /**
  * HomePage
@@ -32,18 +33,32 @@ const Home = () => {
       {/* Full Team Section */}
       <OfficeBearers />
 
+      {/* Map and Address */}
+      <Footer />
+
       {/* Simple Footer */}
-      <footer className="py-12 border-t border-zinc-100 bg-white">
+      {/* <div className="py-12 border-t border-zinc-100 bg-white">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <p className="text-zinc-500 text-sm">
-            © {new Date().getFullYear()} DRT Advocates Association Hyderabad. All rights reserved.
+            © {new Date().getFullYear()} DRT Advocates Association Hyderabad.
+            All rights reserved.
           </p>
           <div className="mt-4 flex justify-center space-x-6 text-zinc-400">
-            <a href="#" className="hover:text-primary transition-colors text-xs font-medium uppercase tracking-widest">Privacy Policy</a>
-            <a href="#" className="hover:text-primary transition-colors text-xs font-medium uppercase tracking-widest">Terms of Service</a>
+            <a
+              href="#"
+              className="hover:text-primary transition-colors text-xs font-medium uppercase tracking-widest"
+            >
+              Privacy Policy
+            </a>
+            <a
+              href="#"
+              className="hover:text-primary transition-colors text-xs font-medium uppercase tracking-widest"
+            >
+              Terms of Service
+            </a>
           </div>
         </div>
-      </footer>
+      </div> */}
     </div>
   );
 };

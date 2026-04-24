@@ -12,7 +12,7 @@ import secretaryImg from "../../assets/seceratary.jpeg";
 const officeBearers = [
   {
     id: 1,
-    name: "Sri. SUBBA RAJU N V",
+    name: "Sri. N V SUBBA RAJU",
     designation: "President",
     experience: "30+ Years",
     specialization: "Banking & Finance Law",
@@ -21,7 +21,7 @@ const officeBearers = [
   },
   {
     id: 2,
-    name: "Sri. VENKATESHWARLU R",
+    name: "Sri. R. VENKATESHWARLU",
     designation: "Vice President",
     experience: "25+ Years",
     specialization: "Corporate Law",
@@ -30,7 +30,7 @@ const officeBearers = [
   },
   {
     id: 3,
-    name: "Sri. RAVINDER V",
+    name: "Sri. V. RAVINDER",
     designation: "General Secretary",
     experience: "15+ Years",
     specialization: "Civil Litigation",
@@ -39,7 +39,7 @@ const officeBearers = [
   },
   {
     id: 4,
-    name: "Sri. SRIKANTH REDDY Y",
+    name: "Sri. Y SRIKANTH REDDY",
     designation: "Treasurer",
     experience: "12+ Years",
     specialization: "Insolvency Law",
@@ -48,7 +48,7 @@ const officeBearers = [
   },
   {
     id: 5,
-    name: "Smt. RAJESHWARI P",
+    name: "Smt. P. RAJESHWARI",
     designation: "Lady Representative",
     experience: "12+ Years",
     specialization: "Family & Property Law",
@@ -97,9 +97,15 @@ const OfficeBearers = () => {
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-base font-black text-zinc-900 leading-tight group-hover:text-primary transition-colors duration-300 uppercase tracking-tighter">
+                {/* <h3 className="text-base font-black text-zinc-900 leading-tight group-hover:text-primary transition-colors duration-300 uppercase tracking-tighter">
                   {bearer.name}
-                </h3>
+                </h3> */}
+                <h3 className="text-sm font-black text-zinc-900 leading-tight 
+  group-hover:text-primary transition-colors duration-300 
+  uppercase tracking-tighter 
+  whitespace-nowrap overflow-hidden text-ellipsis">
+  {bearer.name}
+</h3>
                 <p className="text-primary font-black text-[10px] tracking-[0.2em] uppercase">
                   {bearer.designation}
                 </p>

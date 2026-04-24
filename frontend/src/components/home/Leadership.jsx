@@ -12,14 +12,14 @@ const Leadership = () => {
   const leaders = [
     {
       id: "president",
-      name: "Sri. SUBBA RAJU N V",
+      name: "Sri. N.V. SUBBA RAJU",
       designation: "President",
       image: presidentImg,
       message: "Our association is dedicated to providing robust legal support to advocates practicing in the Debt Recovery Tribunals. We strive to maintain the highest standards of professional ethics and facilitate a collaborative environment for legal excellence.",
     },
     {
       id: "secretary",
-      name: "Sri. RAVINDER V",
+      name: "Sri. V. RAVINDER",
       designation: "General Secretary",
       image: secretaryImg, 
       message: "Communication and transparency are the pillars of our association. We are committed to ensuring that every member has access to the latest updates, digital resources, and support needed for their legal practice.",

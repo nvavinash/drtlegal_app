@@ -7,7 +7,7 @@ import { User, Award, ShieldCheck, Scale } from "lucide-react";
 // Import images correctly for Vite
 import presidentImg from "../../assets/president.png";
 // import vicePresidentImg from "../../assets/vice_president.png"; // If exists
-import secretaryImg from "../../assets/seceratary.png";
+import secretaryImg from "../../assets/seceratary.jpeg";
 
 const officeBearers = [
   {
@@ -34,7 +34,7 @@ const officeBearers = [
     designation: "General Secretary",
     experience: "15+ Years",
     specialization: "Civil Litigation",
-    image: presidentImg, // Placeholder until actual is uploaded
+    image: secretaryImg, // Placeholder until actual is uploaded
     icon: <Award className="text-zinc-500" size={16} />,
   },
   {

@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Button } from "../ui/button";
 import { fadeInUp } from "../../utils/animations";
 import { useNavigate } from "react-router-dom";
+import legalImg from "../../assets/legal-profession.jpg";
 
 /**
  * HeroBanner Section
@@ -26,7 +27,7 @@ const HeroBanner = () => {
           <circle cx="12" cy="12" r="10" />
         </svg> */}
         <div>
-          <img src="src/assets/legal-profession.jpg" alt="" className="w-full max-w-5xl lg:max-w-7xl mx-auto h-auto"/>
+          <img src={legalImg} alt="" className="w-full max-w-5xl lg:max-w-7xl mx-auto h-auto"/>
         </div>
       </div>
 

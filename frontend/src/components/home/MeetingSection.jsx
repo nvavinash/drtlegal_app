@@ -7,11 +7,12 @@ import AnimatedCard from "../AnimatedCard";
 import { Button } from "../ui/button";
 
 // Import demo images
+import justiceAnilkumar from "../../assets/demo/justice_anil.png";
 import judgeGopichand from "../../assets/demo/judge_gopichand.png";
 import judgeKothe from "../../assets/demo/judge_kothe.png";
 
 const MeetingSection = () => {
-  const [links, setLinks] = useState({drat_link: "", drt1_link: "https://meet.zoho.in/fybr-npn-eyd", drt2_link: "https://drt2hyd.webex.com/drt2hyd/j.php?MTID=me04067d0f0eacee5b3d986e366e04c28" });
+  const [links, setLinks] = useState({drat_link: "", drt1_link: "", drt2_link: "" });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,7 +35,7 @@ const MeetingSection = () => {
     title: "Debt Recovery Appellate Tribunal",
     judge: "JUSTICE ANIL K SRIVASTAVA",
     designation: "Hon'ble Chairperson",
-    image: judgeGopichand, // Using existing import as placeholder
+    image: justiceAnilkumar, // Using existing import as placeholder
     link: links.drat_link || links.drat, // Support both formats just in case
     accent: "bg-amber-600",
     shadow: "shadow-amber-200",
@@ -130,7 +131,7 @@ const MeetingSection = () => {
                   size="lg"
                   className={`w-full md:w-auto px-10 py-7 rounded-2xl font-black text-lg flex items-center justify-center gap-3 transition-all duration-300 ${
                     dratDetails.link 
-                      ? `bg-primary hover:opacity-90 text-white shadow-xl ${dratDetails.shadow}` 
+                      ? `bg-primary hover:opacity-90 text-white shadow-xl ` 
                       : 'bg-zinc-200 text-zinc-400 cursor-not-allowed'
                   }`}
                   onClick={() => dratDetails.link && window.open(dratDetails.link, "_blank")}

@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Scale, LogIn, LayoutDashboard } from "lucide-react";
 import { Button } from "./ui/button";
+import swatchbharat from "../assets/swach-bharat.png";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -56,7 +57,7 @@ const Navbar = () => {
             </span>
           </div>
           <div className="flex gap-2">
-            <img src="src/assets/swach-bharat.png" alt="swach bharat" className="h-14"/>
+            <img src={swatchbharat} alt="swach bharat" className="h-14"/>
           </div>
         </Link>
 

@@ -21,7 +21,7 @@ export default function Login() {
     setError("");
     try {
       // API call to request OTP
-      await axios.post("http://localhost:5000/api/auth/request-otp", { email });
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/request-otp`, { email });
       setStep("otp");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to send OTP.");
@@ -36,7 +36,7 @@ export default function Login() {
     setError("");
     try {
       // API call to verify OTP
-      const res = await axios.post("http://localhost:5000/api/auth/verify-otp", { email, otp });
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/verify-otp`, { email, otp });
       // Store token and role
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.role || "member");

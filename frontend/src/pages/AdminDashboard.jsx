@@ -69,10 +69,10 @@ export default function AdminDashboard() {
       setLoading(true);
       try {
         const [usersRes, linksRes, eventsData] = await Promise.all([
-          axios.get("http://localhost:5000/api/admin/users", {
+          axios.get(`${import.meta.env.VITE_API_URL}/api/admin/users`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get("http://localhost:5000/api/admin/virtual"),
+          axios.get(`${import.meta.env.VITE_API_URL}/api/admin/virtual`),
           getEvents()
         ]);
 
@@ -184,7 +184,7 @@ export default function AdminDashboard() {
     setUpdating(true);
     setStatus("");
     try {
-      await axios.post("http://localhost:5000/api/admin/virtual", 
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/virtual`, 
         { settings: virtualLinks },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -366,7 +366,7 @@ export default function AdminDashboard() {
                             <div className="flex items-center gap-3">
                               <div className="w-9 h-9 rounded-full bg-zinc-100 overflow-hidden flex-shrink-0 border border-zinc-200">
                                 {m.photo ? (
-                                  <img src={`http://localhost:5000${m.photo}`} alt={m.name} className="w-full h-full object-cover" />
+                                  <img src={`${import.meta.env.VITE_API_URL}${m.photo}`} alt={m.name} className="w-full h-full object-cover" />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center text-xs font-bold text-zinc-500">
                                     {m.name?.charAt(0)}

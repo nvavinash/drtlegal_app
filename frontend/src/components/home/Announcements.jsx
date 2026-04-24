@@ -90,7 +90,7 @@ const Announcements = () => {
 
               <div className="flex items-center gap-3 text-zinc-400 md:ml-4">
                  {item.pdf ? (
-                   <a href={`http://localhost:5000${item.pdf}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm font-medium text-primary md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                   <a href={`${import.meta.env.VITE_API_URL}${item.pdf}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm font-medium text-primary md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                       View PDF <ExternalLink size={16} />
                    </a>
                  ) : (

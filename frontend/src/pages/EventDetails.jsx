@@ -113,7 +113,7 @@ const EventDetails = () => {
                     </h3>
                     <div className="bg-zinc-50 border border-zinc-200 rounded-[32px] overflow-hidden shadow-inner">
                       <iframe 
-                        src={`http://localhost:5000${event.pdf}`} 
+                        src={`${import.meta.env.VITE_API_URL}${event.pdf}`} 
                         className="w-full aspect-[1/1.4] md:aspect-[4/3] border-0" 
                         title="Document Viewer"
                       />
@@ -143,7 +143,7 @@ const EventDetails = () => {
 
                   <div className="mt-12 space-y-3">
                     {event.pdf && (
-                      <a href={`http://localhost:5000${event.pdf}`} target="_blank" rel="noreferrer" className="w-full bg-zinc-900 hover:bg-zinc-800 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-zinc-200 transition">
+                      <a href={`${import.meta.env.VITE_API_URL}${event.pdf}`} target="_blank" rel="noreferrer" className="w-full bg-zinc-900 hover:bg-zinc-800 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-zinc-200 transition">
                         <ExternalLink size={20} />
                         Download PDF
                       </a>

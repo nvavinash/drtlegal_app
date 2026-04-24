@@ -99,7 +99,7 @@ function getInitials(name = "") {
 /* ─── Member Card ─────────────────────────────────── */
 function MemberCard({ member }) {
   const imgSrc = member.photo
-    ? `http://localhost:5000${member.photo}`
+    ? `${import.meta.env.VITE_API_URL}${member.photo}`
     : null;
 
   return (
@@ -699,7 +699,7 @@ const Members = () => {
 
   const fetchVirtualSettings = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/virtual");
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/virtual`);
       setVirtualSettings(res.data || {});
     } catch (err) {
       console.error("Failed to fetch virtual settings");

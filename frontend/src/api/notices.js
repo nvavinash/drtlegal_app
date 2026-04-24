@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE = "http://localhost:5000/api/notices";
+const BASE = `${import.meta.env.VITE_API_URL}/api/notices`;
 
 const authHeaders = (token) => ({
   headers: { Authorization: `Bearer ${token}` },

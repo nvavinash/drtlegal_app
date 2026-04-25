@@ -31,10 +31,11 @@ const memberSchema = new mongoose.Schema(
     paymentTime: { type: String },
     paymentVerified: { type: Boolean, default: false },
 
-    // File
-    photo: { type: String }, // relative path to uploaded photo
+    // Files
+    photo: { type: String },           // relative path to uploaded photo
+    barCertificate: { type: String },  // relative path to Bar Council Certificate
 
-    // COP Status (Commissioner of Practice)
+    // COP Status (Certificate of Practice)
     copStatus: {
       type: Boolean,
       default: false,
@@ -60,6 +61,20 @@ memberSchema.virtual("isApproved").get(function () {
 });
 memberSchema.virtual("isApproved").set(function (val) {
   if (val) this.status = "Approved";
+});
+
+// Virtual: experience in years (calculated from enrollmentDate)
+memberSchema.virtual("experience").get(function () {
+  if (!this.enrollmentDate) return null;
+  const enroll = new Date(this.enrollmentDate);
+  if (isNaN(enroll.getTime())) return null;
+  const now = new Date();
+  const years = now.getFullYear() - enroll.getFullYear();
+  // Adjust if birthday hasn't occurred yet this year
+  const hasHadAnniversary =
+    now.getMonth() > enroll.getMonth() ||
+    (now.getMonth() === enroll.getMonth() && now.getDate() >= enroll.getDate());
+  return hasHadAnniversary ? years : years - 1;
 });
 
 module.exports = mongoose.model("Member", memberSchema);

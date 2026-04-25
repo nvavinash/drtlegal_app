@@ -11,10 +11,22 @@ const addMember = async (req, res) => {
       dob, bloodGroup, enrollmentNumber, enrollmentDate,
       membershipType, membershipDate, membershipFee,
       transactionNumber, amountPaid, paymentTime,
+      copStatus,
     } = req.body;
 
     let photo = null;
-    if (req.file) {
+    let barCertificate = null;
+
+    if (req.files) {
+      // Multi-field upload (via memberUpload.fields)
+      if (req.files.photo?.[0]) {
+        photo = `/uploads/${req.files.photo[0].filename}`;
+      }
+      if (req.files.barCertificate?.[0]) {
+        barCertificate = `/uploads/${req.files.barCertificate[0].filename}`;
+      }
+    } else if (req.file) {
+      // Single-field upload fallback
       photo = `/uploads/${req.file.filename}`;
     }
 
@@ -25,6 +37,8 @@ const addMember = async (req, res) => {
       membershipType, membershipDate, membershipFee,
       transactionNumber, amountPaid, paymentTime,
       photo,
+      barCertificate,
+      copStatus: copStatus === "true" || copStatus === true,
     });
 
     const saved = await newMember.save();
@@ -39,9 +53,18 @@ const addMember = async (req, res) => {
 const getMembers = async (req, res) => {
   try {
     const members = await Member.find({ status: "Approved" })
-      .select("name enrollmentNumber phone email address status photo membershipType createdAt")
+      .select("name enrollmentNumber enrollmentDate phone email address status photo barCertificate membershipType copStatus createdAt")
       .sort({ name: 1 });
-    res.status(200).json(members);
+
+    // Attach calculated experience and sort COP members first
+    const enriched = members
+      .map((m) => {
+        const obj = m.toObject({ virtuals: true });
+        return obj;
+      })
+      .sort((a, b) => (b.copStatus ? 1 : 0) - (a.copStatus ? 1 : 0));
+
+    res.status(200).json(enriched);
   } catch (error) {
     console.error("Error fetching members:", error);
     res.status(500).json({ message: "Failed to fetch members" });
@@ -75,9 +98,24 @@ const getMemberById = async (req, res) => {
 const updateMember = async (req, res) => {
   try {
     const updateFields = { ...req.body };
-    if (req.file) {
+
+    if (req.files) {
+      // Multi-field upload
+      if (req.files.photo?.[0]) {
+        updateFields.photo = `/uploads/${req.files.photo[0].filename}`;
+      }
+      if (req.files.barCertificate?.[0]) {
+        updateFields.barCertificate = `/uploads/${req.files.barCertificate[0].filename}`;
+      }
+    } else if (req.file) {
       updateFields.photo = `/uploads/${req.file.filename}`;
     }
+
+    // Coerce copStatus string → boolean
+    if (typeof updateFields.copStatus === "string") {
+      updateFields.copStatus = updateFields.copStatus === "true";
+    }
+
     // Remove undefined keys
     Object.keys(updateFields).forEach(
       (k) => updateFields[k] === undefined && delete updateFields[k]

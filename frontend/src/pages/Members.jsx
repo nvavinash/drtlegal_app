@@ -21,6 +21,9 @@ import {
   ImageIcon,
   Smartphone,
   ExternalLink,
+  Award,
+  FileText,
+  Briefcase,
 } from "lucide-react";
 
 /* ─── Constants ───────────────────────────────────── */
@@ -74,6 +77,7 @@ const INITIAL_FORM = {
   transactionNumber: "",
   amountPaid: "",
   paymentTime: "",
+  copStatus: false,
 };
 
 /* ─── Helpers ─────────────────────────────────────── */
@@ -102,8 +106,21 @@ function MemberCard({ member }) {
     ? `${import.meta.env.VITE_API_URL}${member.photo}`
     : null;
 
+  const showCopBadge = member.copStatus && member.status === "Approved";
+
   return (
-    <div className="flex flex-col bg-white border border-zinc-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+    <div className="flex flex-col bg-white border border-zinc-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 relative">
+      {/* COP Badge */}
+      {showCopBadge && (
+        <span
+          title="Certificate of Practice"
+          className="absolute top-2 right-2 z-10 flex items-center gap-1 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm"
+        >
+          <Award className="w-3 h-3" />
+          COP
+        </span>
+      )}
+
       {/* Avatar strip */}
       <div className="bg-gradient-to-br from-slate-700 to-slate-900 px-4 py-3 flex items-center gap-3">
         <div className="w-14 h-14 rounded-full bg-white/20 flex-shrink-0 overflow-hidden border-2 border-white/30">
@@ -138,6 +155,12 @@ function MemberCard({ member }) {
           <div className="flex items-center gap-2 text-xs text-zinc-600">
             <Hash className="w-3 h-3 flex-shrink-0 text-zinc-400" />
             <span className="font-mono truncate">{member.enrollmentNumber}</span>
+          </div>
+        )}
+        {member.experience != null && (
+          <div className="flex items-center gap-2 text-xs text-zinc-600">
+            <Briefcase className="w-3 h-3 flex-shrink-0 text-zinc-400" />
+            <span>{member.experience} yr{member.experience !== 1 ? "s" : ""} experience</span>
           </div>
         )}
         {member.phone && (
@@ -334,11 +357,13 @@ function RegistrationForm({ prefillType, onSuccess, onClose }) {
   });
   const [photo, setPhoto] = useState(null);
   const [photoError, setPhotoError] = useState("");
+  const [barCert, setBarCert] = useState(null);
+  const [barCertError, setBarCertError] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     
     if (name === "membershipType") {
       setForm((prev) => ({ 
@@ -346,6 +371,8 @@ function RegistrationForm({ prefillType, onSuccess, onClose }) {
         [name]: value,
         membershipFee: MEMBERSHIP_FEES[value]
       }));
+    } else if (type === "checkbox") {
+      setForm((prev) => ({ ...prev, [name]: checked }));
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
     }
@@ -366,6 +393,22 @@ function RegistrationForm({ prefillType, onSuccess, onClose }) {
       return;
     }
     setPhoto(file);
+  };
+
+  const handleBarCert = (e) => {
+    setBarCertError("");
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const allowed = ["image/jpeg", "image/jpg", "image/png", "application/pdf"];
+    if (!allowed.includes(file.type)) {
+      setBarCertError("Only JPEG, PNG, or PDF files are allowed.");
+      return;
+    }
+    if (file.size > 100 * 1024) {
+      setBarCertError("File size must be under 100KB.");
+      return;
+    }
+    setBarCert(file);
   };
 
   const validate = () => {
@@ -391,8 +434,15 @@ function RegistrationForm({ prefillType, onSuccess, onClose }) {
     setLoading(true);
     try {
       const data = new FormData();
-      Object.entries(form).forEach(([k, v]) => v && data.append(k, v));
+      Object.entries(form).forEach(([k, v]) => {
+        if (k === "copStatus") {
+          data.append(k, v ? "true" : "false");
+        } else if (v) {
+          data.append(k, v);
+        }
+      });
       data.append("photo", photo);
+      if (barCert) data.append("barCertificate", barCert);
       await createMember(data);
       onSuccess();
     } catch (err) {
@@ -583,6 +633,67 @@ function RegistrationForm({ prefillType, onSuccess, onClose }) {
               {(photoError || errors.photo) && (
                 <p className="text-xs text-red-500 mt-1">{photoError || errors.photo}</p>
               )}
+            </div>
+
+            {/* Section: Bar Council Certificate */}
+            <div>
+              <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-3">
+                Bar Council Enrollment Certificate
+              </h3>
+              <div
+                className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center text-center cursor-pointer transition hover:bg-zinc-50 relative ${
+                  barCertError ? "border-red-400 bg-red-50" : "border-zinc-300"
+                }`}
+              >
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,application/pdf"
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  onChange={handleBarCert}
+                />
+                {barCert ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <FileText className="w-8 h-8 text-emerald-500" />
+                    <p className="text-sm font-medium text-zinc-700">{barCert.name}</p>
+                    <p className="text-xs text-zinc-400">
+                      {(barCert.size / 1024).toFixed(1)} KB — Click to change
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2">
+                    <UploadCloud className="w-8 h-8 text-zinc-400" />
+                    <p className="text-sm font-medium text-zinc-600">
+                      Click to upload Bar Council Certificate
+                    </p>
+                    <p className="text-xs text-zinc-400">
+                      JPEG / PNG / PDF · Max 100KB · Optional
+                    </p>
+                  </div>
+                )}
+              </div>
+              {barCertError && (
+                <p className="text-xs text-red-500 mt-1">{barCertError}</p>
+              )}
+            </div>
+
+            {/* Section: COP Status */}
+            <div className="flex items-start gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+              <input
+                type="checkbox"
+                id="copStatus"
+                name="copStatus"
+                checked={form.copStatus}
+                onChange={handleChange}
+                className="mt-0.5 w-4 h-4 accent-slate-700 cursor-pointer flex-shrink-0"
+              />
+              <label htmlFor="copStatus" className="cursor-pointer">
+                <p className="text-sm font-semibold text-zinc-800">
+                  I have Certificate of Practice (COP)
+                </p>
+                <p className="text-xs text-zinc-500 mt-0.5">
+                  Check this if you hold a valid Certificate of Practice issued by the Bar Council.
+                </p>
+              </label>
             </div>
             <div>
               <Declaration />

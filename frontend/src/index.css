@@ -40,7 +40,8 @@
     --card-foreground: 0 0% 4.3%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 4.3%;
-    --primary: 355 83% 41%; /* #C1121F legal red */
+    /* --primary: 355 83% 41%; #C1121F legal red     */
+    --primary: 355 83% 41%;
     --primary-foreground: 0 0% 100%;
     --secondary: 215 16% 47%; /* #6B7280 secondary text */
     --secondary-foreground: 0 0% 4.3%;

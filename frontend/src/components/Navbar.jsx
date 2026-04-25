@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Scale, LogIn, LayoutDashboard } from "lucide-react";
 import { Button } from "./ui/button";
 import swatchbharat from "../assets/swach-bharat.png";
+import BarAssociationLogo from "/logo_bar.png";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,14 +40,22 @@ const Navbar = () => {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "bg-white/90 backdrop-blur-md shadow-md py-3" : "bg-transparent py-5"
+        scrolled
+          ? "bg-white/90 backdrop-blur-md shadow-md py-3"
+          : "bg-transparent py-5"
       }`}
     >
       <div className="container mx-auto px-6 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 group">
-          <div className="p-2 bg-primary rounded-lg group-hover:rotate-12 transition-transform duration-300">
-            <Scale className="text-white w-6 h-6" />
+          {/* <div className="p-1 bg-red-50 rounded-lg group-hover:rotate-12 transition-transform duration-300"> */}
+          {/* <Scale className="text-white w-6 h-6" /> */}
+          <div>
+            <img
+              src={BarAssociationLogo}
+              alt=""
+              className="text-white w-18 h-18"
+            />
           </div>
           <div className="flex flex-col">
             <span className="font-bold text-lg md:text-xl tracking-tighter text-zinc-900 leading-none">
@@ -57,7 +66,7 @@ const Navbar = () => {
             </span>
           </div>
           <div className="flex gap-2">
-            <img src={swatchbharat} alt="swach bharat" className="h-14"/>
+            <img src={swatchbharat} alt="swach bharat" className="h-14" />
           </div>
         </Link>
 
@@ -69,7 +78,9 @@ const Navbar = () => {
                 key={link.name}
                 to={link.path}
                 className={`text-sm font-medium transition-colors hover:text-primary ${
-                  location.pathname === link.path ? "text-primary border-b-2 border-primary" : "text-zinc-600"
+                  location.pathname === link.path
+                    ? "text-primary border-b-2 border-primary"
+                    : "text-zinc-600"
                 }`}
               >
                 {link.name}
@@ -119,7 +130,9 @@ const Navbar = () => {
                   key={link.name}
                   to={link.path}
                   className={`text-lg font-medium py-2 transition-colors ${
-                    location.pathname === link.path ? "text-primary" : "text-zinc-600"
+                    location.pathname === link.path
+                      ? "text-primary"
+                      : "text-zinc-600"
                   }`}
                   onClick={() => setIsOpen(false)}
                 >

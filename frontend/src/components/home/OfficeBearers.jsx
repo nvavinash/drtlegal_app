@@ -6,8 +6,15 @@ import { User, Award, ShieldCheck, Scale } from "lucide-react";
 
 // Import images correctly for Vite
 import presidentImg from "../../assets/president.png";
-// import vicePresidentImg from "../../assets/vice_president.png"; // If exists
 import secretaryImg from "../../assets/seceratary.jpeg";
+import Vicepresident from "../../assets/vicepresident.png";
+import Treasurer from "../../assets/treasurer.png";
+import Ladyrepresentative from "../../assets/lady.png";
+import JointSecretary from "../../assets/male.png";
+import Kranthikumar from "../../assets/Kranthikumar.png";
+// import srikanthreddy from "../../assets/srikanthreddy.png";
+import Srikarreddy from "../../assets/srikarreddy.png";
+import Rameshs from "../../assets/rameshs.png";
 
 const officeBearers = [
   {
@@ -25,7 +32,7 @@ const officeBearers = [
     designation: "Vice President",
     experience: "25+ Years",
     specialization: "Corporate Law",
-    image: presidentImg, // Placeholder until actual is uploaded
+    image: Vicepresident, // Placeholder until actual is uploaded
     icon: <ShieldCheck className="text-blue-500" size={16} />,
   },
   {
@@ -39,12 +46,12 @@ const officeBearers = [
   },
   {
     id: 4,
-    name: "Sri. Y SRIKANTH REDDY",
-    designation: "Treasurer",
-    experience: "12+ Years",
-    specialization: "Insolvency Law",
-    image: presidentImg, // Placeholder until actual is uploaded
-    icon: <ShieldCheck className="text-emerald-500" size={16} />,
+    name: "A. VIJAY KUMAR",
+    designation: "Joint Secretary",
+    experience: "15+ Years",
+    specialization: "Civil Litigation",
+    image: JointSecretary,
+    icon: <Award className="text-zinc-500" size={16} />,
   },
   {
     id: 5,
@@ -52,8 +59,80 @@ const officeBearers = [
     designation: "Lady Representative",
     experience: "12+ Years",
     specialization: "Family & Property Law",
-    image: secretaryImg,
+    image: Ladyrepresentative,
     icon: <Scale className="text-purple-500" size={16} />,
+  },
+  {
+    id: 6,
+    name: "Sri. K KRANTHI KUMAR ",
+    designation: "Sports & Cultural Secretary",
+    experience: "12+ Years",
+    specialization: "Insolvency Law",
+    image: Kranthikumar,
+    icon: <ShieldCheck className="text-emerald-500" size={16} />,
+  },
+  {
+    id: 7,
+    name: "Sri. Y SRIKANTH REDDY",
+    designation: "Treasurer",
+    experience: "12+ Years",
+    specialization: "Insolvency Law",
+    image: Treasurer, // Placeholder until actual is uploaded
+    icon: <ShieldCheck className="text-emerald-500" size={16} />,
+  },
+  {
+    id: 8,
+    name: "Sri. A NIRAJA",
+    designation: "Librarian",
+    experience: "12+ Years",
+    specialization: "Insolvency Law",
+    image: Ladyrepresentative, // Placeholder until actual is uploaded
+    icon: <ShieldCheck className="text-emerald-500" size={16} />,
+  },
+  {
+    id: 9,
+    name: "Sri. S RAMESH",
+    designation: "Executive member",
+    experience: "12+ Years",
+    specialization: "Insolvency Law",
+    image: Rameshs, // Placeholder until actual is uploaded
+    icon: <ShieldCheck className="text-emerald-500" size={16} />,
+  },
+  {
+    id: 10,
+    name: "Sri. P SRIKAR REDDY",
+    designation: "Executive member",
+    experience: "12+ Years",
+    specialization: "Insolvency Law",
+    image: Srikarreddy, // Placeholder until actual is uploaded
+    icon: <ShieldCheck className="text-emerald-500" size={16} />,
+  },
+  {
+    id: 11,
+    name: "Sri. A SRINIVAS",
+    designation: "Executive member",
+    experience: "12+ Years",
+    specialization: "Insolvency Law",
+    image: JointSecretary, // Placeholder until actual is uploaded
+    icon: <ShieldCheck className="text-emerald-500" size={16} />,
+  },
+  {
+    id: 12,
+    name: "Smt. P BABITHA",
+    designation: "Executive member",
+    experience: "12+ Years",
+    specialization: "Insolvency Law",
+    image: Ladyrepresentative, // Placeholder until actual is uploaded
+    icon: <ShieldCheck className="text-emerald-500" size={16} />,
+  },
+  {
+    id: 13,
+    name: "Smt. V L V DEVI",
+    designation: "Executive member",
+    experience: "12+ Years",
+    specialization: "Insolvency Law",
+    image: Ladyrepresentative, // Placeholder until actual is uploaded
+    icon: <ShieldCheck className="text-emerald-500" size={16} />,
   },
 ];
 
@@ -61,18 +140,20 @@ const OfficeBearers = () => {
   return (
     <SectionWrapper id="office-bearers" className="bg-white">
       <div className="mb-16 text-center">
-        <h2 className="text-2xl md:text-3xl font-bold text-zinc-900 mb-4 tracking-tight">Our Office Bearers</h2>
+        <h2 className="text-2xl md:text-3xl font-bold text-zinc-900 mb-4 tracking-tight">
+          Our Office Bearers
+        </h2>
         <div className="w-20 h-1.5 bg-primary/20 mx-auto rounded-full mb-6" />
         <p className="text-zinc-500 max-w-2xl mx-auto text-lg">
-          Dedicated leadership committed to representing the interests of our members 
-          and upholding the highest legal standards.
+          Dedicated leadership committed to representing the interests of our
+          members and upholding the highest legal standards.
         </p>
       </div>
 
       <div className="flex flex-wrap justify-center gap-8 max-w-8xl mx-auto">
         {officeBearers.map((bearer) => (
-          <AnimatedCard 
-            key={bearer.id} 
+          <AnimatedCard
+            key={bearer.id}
             className="group relative overflow-hidden text-center border-none shadow-sm hover:shadow-xl transition-all duration-500 bg-zinc-50/50 w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.33%-2rem)] xl:w-[calc(20%-2rem)] min-w-[220px]"
           >
             <CardContent className="pt-10 pb-8 px-4">
@@ -92,7 +173,7 @@ const OfficeBearers = () => {
                 </div>
                 {/* Badge Icon */}
                 <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center border border-zinc-100">
-                   {bearer.icon}
+                  {bearer.icon}
                 </div>
               </div>
 
@@ -100,12 +181,14 @@ const OfficeBearers = () => {
                 {/* <h3 className="text-base font-black text-zinc-900 leading-tight group-hover:text-primary transition-colors duration-300 uppercase tracking-tighter">
                   {bearer.name}
                 </h3> */}
-                <h3 className="text-sm font-black text-zinc-900 leading-tight 
+                <h3
+                  className="text-sm font-black text-zinc-900 leading-tight 
   group-hover:text-primary transition-colors duration-300 
   uppercase tracking-tighter 
-  whitespace-nowrap overflow-hidden text-ellipsis">
-  {bearer.name}
-</h3>
+  whitespace-nowrap overflow-hidden text-ellipsis"
+                >
+                  {bearer.name}
+                </h3>
                 <p className="text-primary font-black text-[10px] tracking-[0.2em] uppercase">
                   {bearer.designation}
                 </p>

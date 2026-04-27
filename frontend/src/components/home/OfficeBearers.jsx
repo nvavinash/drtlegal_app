@@ -11,7 +11,7 @@ import Vicepresident from "../../assets/vicepresident.png";
 import Treasurer from "../../assets/treasurer.png";
 import Ladyrepresentative from "../../assets/lady.png";
 import JointSecretary from "../../assets/male.png";
-import Kranthikumar from "../../assets/Kranthikumar.png";
+import Kranthikumar from "../../assets/kranthikumar.png";
 // import srikanthreddy from "../../assets/srikanthreddy.png";
 import Srikarreddy from "../../assets/srikarreddy.png";
 import Rameshs from "../../assets/rameshs.png";

@@ -10,7 +10,13 @@ connectDB();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors(
+  {
+  origin: "https://drtlegal-app.vercel.app",
+  credentials: true
+}
+));
+app.options("*", cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 

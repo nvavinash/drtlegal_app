@@ -28,6 +28,7 @@ const Navbar = () => {
     { name: "Notices", path: "/notices" },
     { name: "Members List", path: "/members" },
     { name: "Commissioner List", path: "/commissioners" },
+    ...(token ? [{ name: "Financial Ledger", path: "/ledger" }] : []),
   ];
 
   const handleAdminClick = () => {

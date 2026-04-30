@@ -8,6 +8,7 @@ import Notices from "./pages/Notices";
 import Members from "./pages/Members";
 import Commissioners from "./pages/Commissioners";
 import About from "./pages/About";
+import Ledger from "./pages/Ledger";
 import Navbar from "./components/Navbar";
 
 function App() {
@@ -23,7 +24,8 @@ function App() {
         <Route path="/members" element={<Members />} />
         <Route path="/commissioners" element={<Commissioners />} />
         <Route path="/about" element={<About />} />
-        
+        <Route path="/ledger" element={<Ledger />} />
+
         {/* Auth Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={<AdminDashboard />} />

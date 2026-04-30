@@ -20,6 +20,7 @@ app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/events", require("./routes/eventRoutes"));
 app.use("/api/members", require("./routes/memberRoutes"));
 app.use("/api/commissioners", require("./routes/commissionerRoutes"));
+app.use("/api/ledger", require("./routes/ledgerRoutes"));
 
 // Serve uploaded files statically
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));

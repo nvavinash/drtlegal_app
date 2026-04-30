@@ -12,13 +12,25 @@ const generateToken = (id, role) => {
 const otpStore = {};
 
 // Helper to send OTP email via Nodemailer
+// const sendOtpEmail = async (toEmail, otp) => {
+//   const nodemailer = require("nodemailer");
+//   const transporter = nodemailer.createTransport({
+//     service: "gmail",
+//     auth: {
+//       user: process.env.EMAIL_USER,
+//       pass: process.env.EMAIL_PASS,
+//     },
+//   });
+
 const sendOtpEmail = async (toEmail, otp) => {
   const nodemailer = require("nodemailer");
   const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp-relay.brevo.com",
+    port: 587,
+    secure: false,
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
+      user: process.env.EMAIL_USER, // e.g. a9bece001@smtp-brevo.com
+      pass: process.env.EMAIL_PASS, // SMTP KEY
     },
   });
 
@@ -35,7 +47,7 @@ const sendOtpEmail = async (toEmail, otp) => {
         </div>
         <p style="color: #888; text-align:center; font-size: 13px;">This OTP expires in <strong>10 minutes</strong>. Do not share it with anyone.</p>
       <div style="background: #f5f5f5; border-radius: 8px; padding: 20px; text-align:center; margin: 20px 0;">
-          <p style="color: #c1121f; font-size: 12px; letter-spacing: 10px; margin: 0;">Only limited times OTP can be sent in a day</p>
+          <p style="color: #c1121f; font-size: 12px; margin: 0;">Only limited times OTP can be sent in a day</p>
           <span style="color : #555 ; position: absolute; bottom: 0; right: 0; font-size: 13px;">CREATED WITH &#10084;</span>
         
         </div>
@@ -44,8 +56,16 @@ const sendOtpEmail = async (toEmail, otp) => {
     `,
   };
 
-  return transporter.sendMail(mailOptions);
-};
+  // return transporter.sendMail(mailOptions)};
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("✅ Email sent:", info.response);
+    return info;
+  } catch (error) {
+    console.error("❌ EMAIL ERROR FULL:", error);
+    throw error;
+  }
+}
 
 // --- OTP Request Handler ---
 // POST /api/auth/request-otp

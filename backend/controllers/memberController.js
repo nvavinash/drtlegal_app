@@ -1,4 +1,5 @@
 const Member = require("../models/Member");
+const Ledger = require("../models/Ledger");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
@@ -42,6 +43,27 @@ const addMember = async (req, res) => {
     });
 
     const saved = await newMember.save();
+
+    // Auto-create ledger entry for membership fee
+    try {
+      const feeAmount = parseFloat(membershipFee || amountPaid || 0);
+      if (feeAmount > 0) {
+        await Ledger.create({
+          memberId: saved._id,
+          name: saved.name,
+          type: "credit",
+          amount: feeAmount,
+          description: "Membership Fee",
+          paymentMode: "UPI",
+          transactionId: transactionNumber || "",
+          date: new Date(),
+        });
+      }
+    } catch (ledgerErr) {
+      console.error("Warning: Could not create ledger entry for new member:", ledgerErr.message);
+      // Non-fatal: member registration still succeeds
+    }
+
     res.status(201).json(saved);
   } catch (error) {
     console.error("Error adding member:", error);

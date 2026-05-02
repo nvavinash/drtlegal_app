@@ -1,3 +1,4 @@
+const axios = require("axios");
 const jwt = require("jsonwebtoken");
 const { getIsConnected } = require("../config/db");
 
@@ -22,50 +23,85 @@ const otpStore = {};
 //     },
 //   });
 
-const sendOtpEmail = async (toEmail, otp) => {
-  const nodemailer = require("nodemailer");
-  const transporter = nodemailer.createTransport({
-    host: "smtp-relay.brevo.com",
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER, // e.g. a9bece001@smtp-brevo.com
-      pass: process.env.EMAIL_PASS, // SMTP KEY
-    },
-  });
+// const sendOtpEmail = async (toEmail, otp) => {
+//   const nodemailer = require("nodemailer");
+//   const transporter = nodemailer.createTransport({
+//     host: "smtp-relay.brevo.com",
+//     port: 587,
+//     secure: false,
+//     auth: {
+//       user: process.env.EMAIL_USER, // e.g. a9bece001@smtp-brevo.com
+//       pass: process.env.EMAIL_PASS, // SMTP KEY
+//     },
+//   });
 
-  const mailOptions = {
-    from: `"DRT Bar Association" <${process.env.SENDER_EMAIL || process.env.ADMIN_EMAIL}>`,
-    to: toEmail,
-    subject: "Your Admin Login OTP - DRT Bar Association Hyderabad",
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto; padding: 30px; border: 1px solid #eee; border-radius: 12px;">
-        <h2 style="color: #1a1a2e; text-align:center;">DRT Advocates Association</h2>
-        <p style="color: #555; text-align:center;">Your secure One-Time Password for Admin Login:</p>
-        <div style="background: #f5f5f5; border-radius: 8px; padding: 20px; text-align:center; margin: 20px 0;">
-          <h1 style="color: #c1121f; font-size: 48px; letter-spacing: 10px; margin: 0;">${otp}</h1>
-        </div>
-        <p style="color: #888; text-align:center; font-size: 13px;">This OTP expires in <strong>10 minutes</strong>. Do not share it with anyone.</p>
-      <div style="background: #f5f5f5; border-radius: 8px; padding: 20px; text-align:center; margin: 20px 0;">
-          <p style="color: #c1121f; font-size: 12px; margin: 0;">Only limited times OTP can be sent in a day</p>
-          <span style="color : #555 ; position: absolute; bottom: 0; right: 0; font-size: 13px;">CREATED WITH &#10084;</span>
+//   const mailOptions = {
+//     from: `"DRT Bar Association" <${process.env.SENDER_EMAIL || process.env.ADMIN_EMAIL}>`,
+//     to: toEmail,
+//     subject: "Your Admin Login OTP - DRT Bar Association Hyderabad",
+//     html: `
+//       <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto; padding: 30px; border: 1px solid #eee; border-radius: 12px;">
+//         <h2 style="color: #1a1a2e; text-align:center;">DRT Advocates Association</h2>
+//         <p style="color: #555; text-align:center;">Your secure One-Time Password for Admin Login:</p>
+//         <div style="background: #f5f5f5; border-radius: 8px; padding: 20px; text-align:center; margin: 20px 0;">
+//           <h1 style="color: #c1121f; font-size: 48px; letter-spacing: 10px; margin: 0;">${otp}</h1>
+//         </div>
+//         <p style="color: #888; text-align:center; font-size: 13px;">This OTP expires in <strong>10 minutes</strong>. Do not share it with anyone.</p>
+//       <div style="background: #f5f5f5; border-radius: 8px; padding: 20px; text-align:center; margin: 20px 0;">
+//           <p style="color: #c1121f; font-size: 12px; margin: 0;">Only limited times OTP can be sent in a day</p>
+//           <span style="color : #555 ; position: absolute; bottom: 0; right: 0; font-size: 13px;">CREATED WITH &#10084;</span>
         
-        </div>
-        </div>
+//         </div>
+//         </div>
       
-    `,
-  };
+//     `,
+//   };
 
-  // return transporter.sendMail(mailOptions)};
+//   // return transporter.sendMail(mailOptions)};
+//   try {
+//     const info = await transporter.sendMail(mailOptions);
+//     console.log("✅ Email sent:", info.response);
+//     return info;
+//   } catch (error) {
+//     console.error("❌ EMAIL ERROR FULL:", error);
+//     throw error;
+//   }
+// }
+
+const sendOtpEmail = async (toEmail, otp) => {
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log("✅ Email sent:", info.response);
-    return info;
+    const response = await axios.post(
+      "https://api.brevo.com/v3/smtp/email",
+      {
+        sender: {
+          name: "DRT Bar Association",
+          email: process.env.SENDER_EMAIL, // must be verified in Brevo
+        },
+        to: [{ email: toEmail }],
+        subject: "Your Admin Login OTP",
+        htmlContent: `
+          <div style="font-family: Arial;">
+            <h2>DRT Advocates Association</h2>
+            <p>Your OTP is:</p>
+            <h1 style="letter-spacing:5px;">${otp}</h1>
+            <p>This OTP is valid for 10 minutes.</p>
+          </div>
+        `,
+      },
+      {
+        headers: {
+          "api-key": process.env.BREVO_API_KEY,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("✅ Email sent via API:", response.data);
   } catch (error) {
-    console.error("❌ EMAIL ERROR FULL:", error);
+    console.error("❌ Email API error:", error.response?.data || error.message);
     throw error;
   }
-}
+};
 
 // --- OTP Request Handler ---
 // POST /api/auth/request-otp

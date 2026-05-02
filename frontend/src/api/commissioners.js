@@ -1,36 +1,37 @@
-const BASE_URL = `${import.meta.env.VITE_API_URL}/api/commissioners`;
+import axios from "axios";
 
-const authHeaders = (token) => ({
-  headers: { Authorization: `Bearer ${token}` },
-});
+const BASE = `${import.meta.env.VITE_API_URL}/api/commissioner`;
 
-/**
- * GET /api/commissioners
- * Returns all COP members with experience & queue assignment status.
- */
-export const getCommissionerList = async (token) => {
-  const { default: axios } = await import("axios");
-  const res = await axios.get(BASE_URL, authHeaders(token));
-  return res.data;
-};
+const authH = (token) => ({ headers: { Authorization: `Bearer ${token}` } });
 
-/**
- * GET /api/commissioners/next
- * Assigns & returns the next commissioner in line.
- * Admin + Editor only.
- */
-export const getNextCommissioner = async (token) => {
-  const { default: axios } = await import("axios");
-  const res = await axios.get(`${BASE_URL}/next`, authHeaders(token));
-  return res.data;
-};
+// ── Public ──────────────────────────────────────────────────────────────────
+/** GET /api/commissioner/list — all assignments (public) */
+export const getAssignmentList = () => axios.get(`${BASE}/list`).then((r) => r.data);
 
-/**
- * POST /api/commissioners/init
- * Initializes/resets the commissioner queue (Admin only).
- */
-export const initCommissionerQueue = async (token) => {
-  const { default: axios } = await import("axios");
-  const res = await axios.post(`${BASE_URL}/init`, {}, authHeaders(token));
-  return res.data;
-};
+/** GET /api/commissioner/cop-members — all COP members with assignment status (public) */
+export const getCopMembersPublic = () => axios.get(`${BASE}/cop-members`).then((r) => r.data);
+
+/** GET /api/commissioner/member-assignments — memberId -> latest active assignment */
+export const getMemberAssignments = () =>
+  axios.get(`${BASE}/member-assignments`).then((r) => r.data);
+
+// ── Editor / Admin ───────────────────────────────────────────────────────────
+/** GET /api/commissioner/next — preview next member + queue */
+export const getNext = (token) => axios.get(`${BASE}/next`, authH(token)).then((r) => r.data);
+
+/** GET /api/commissioner/history — last 20 assignments */
+export const getHistory = (token) =>
+  axios.get(`${BASE}/history`, authH(token)).then((r) => r.data);
+
+/** GET /api/commissioner/eligible — full eligible list with pointer */
+export const getEligibleList = (token) =>
+  axios.get(`${BASE}/eligible`, authH(token)).then((r) => r.data);
+
+/** POST /api/commissioner/assign */
+export const assignCommissioner = (token, body) =>
+  axios.post(`${BASE}/assign`, body, authH(token)).then((r) => r.data);
+
+// ── Admin only ───────────────────────────────────────────────────────────────
+/** POST /api/commissioner/reset */
+export const resetQueue = (token) =>
+  axios.post(`${BASE}/reset`, {}, authH(token)).then((r) => r.data);

@@ -57,4 +57,13 @@ const editorOrAdmin = (req, res, next) => {
   }
 };
 
-module.exports = { protect, adminOnly, editorOrAdmin };
+// Editor role only — used for commissioner rotation (admin cannot assign)
+const editorOnly = (req, res, next) => {
+  if (req.user && req.user.role === "editor") {
+    next();
+  } else {
+    res.status(403).json({ message: "Not authorized. Only editors can assign commissioners." });
+  }
+};
+
+module.exports = { protect, adminOnly, editorOrAdmin, editorOnly };

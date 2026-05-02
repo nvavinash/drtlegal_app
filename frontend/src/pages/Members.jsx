@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import SectionWrapper from "../components/SectionWrapper";
 import { getMembers, createMember } from "../api/members";
+import { getMemberAssignments } from "../api/commissioners";
 import Declaration from "../components/Declaration";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -48,16 +49,12 @@ function UpiQRCode({ upiLink, size = 180 }) {
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const MEMBERSHIP_TYPES = ["PATRON MEMBER", "LIFE MEMBER", "ORDINARY MEMBER"];
-const GENDER_OPTIONS = [
-  "Male",
-  "Female",
-  "Other"
-];
+const GENDER_OPTIONS = ["Male", "Female", "Other"];
 
 const MEMBERSHIP_FEES = {
   "PATRON MEMBER": "10525",
   "LIFE MEMBER": "3525",
-  "ORDINARY MEMBER": "1125"
+  "ORDINARY MEMBER": "1125",
 };
 
 const INITIAL_FORM = {
@@ -101,25 +98,37 @@ function getInitials(name = "") {
 }
 
 /* ─── Member Card ─────────────────────────────────── */
-function MemberCard({ member }) {
-  const imgSrc = member.photo
-    ? `${import.meta.env.VITE_API_URL}${member.photo}`
-    : null;
+function MemberCard({ member, isCommissioner }) {
+  const [imgError, setImgError] = useState(false);
+  const imgSrc =
+    member.photo && !imgError
+      ? `${import.meta.env.VITE_API_URL}${member.photo}`
+      : null;
 
   const showCopBadge = member.copStatus && member.status === "Approved";
 
   return (
     <div className="flex flex-col bg-white border border-zinc-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 relative">
-      {/* COP Badge */}
+      {/* COP Badge — top left */}
       {showCopBadge && (
         <span
-          title="Certificate of Practice"
-          className="absolute top-2 right-2 z-10 flex items-center gap-1 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm"
+          title="COP Approved"
+          className="absolute top-1 right-1 z-10 flex items-center gap-1 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm"
         >
           <Award className="w-3 h-3" />
           COP
         </span>
       )}
+      {/* Commissioner Badge — top right */}
+      {/* {isCommissioner && (
+        <span
+          title="Currently Assigned Commissioner"
+          className="absolute top-2 right-2 z-10 flex items-center gap-1 bg-teal-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm"
+        >
+          <Award className="w-3 h-3" />
+          Commissioner
+        </span>
+      )} */}
 
       {/* Avatar strip */}
       <div className="bg-gradient-to-br from-slate-700 to-slate-900 px-4 py-3 flex items-center gap-3">
@@ -129,19 +138,17 @@ function MemberCard({ member }) {
               src={imgSrc}
               alt={member.name}
               className="w-full h-full object-cover"
-              onError={(e) => {
-                e.target.style.display = "none";
-              }}
+              onError={() => setImgError(true)}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-white font-bold text-sm">
-              {getInitials(member.name)}
+              {getInitials(member.name).toUpperCase()}
             </div>
           )}
         </div>
         <div className="min-w-0">
           <p className="text-amber-500 font-semibold text-md leading-tight truncate">
-            {member.name}
+            {member.name.toUpperCase()}
           </p>
           <p className="text-slate-300 text-xs truncate">
             Adv. | {member.membershipType || "Member"}
@@ -154,13 +161,18 @@ function MemberCard({ member }) {
         {member.enrollmentNumber && (
           <div className="flex items-center gap-2 text-xs text-zinc-600">
             <Hash className="w-3 h-3 flex-shrink-0 text-zinc-400" />
-            <span className="font-mono truncate">{member.enrollmentNumber}</span>
+            <span className="font-mono truncate">
+              {member.enrollmentNumber}
+            </span>
           </div>
         )}
         {member.experience != null && (
           <div className="flex items-center gap-2 text-xs text-zinc-600">
             <Briefcase className="w-3 h-3 flex-shrink-0 text-zinc-400" />
-            <span>{member.experience} yr{member.experience !== 1 ? "s" : ""} experience</span>
+            <span>
+              {member.experience} yr{member.experience !== 1 ? "s" : ""}{" "}
+              experience
+            </span>
           </div>
         )}
         {member.phone && (
@@ -180,7 +192,7 @@ function MemberCard({ member }) {
             <MapPin className="w-3 h-3 flex-shrink-0 text-zinc-400 mt-0.5" />
             <span className="line-clamp-2">{member.address.toUpperCase()}</span>
           </div>
-        )}   
+        )}
       </div>
     </div>
   );
@@ -192,8 +204,8 @@ function PaymentGate({ isMobile, onConfirmed, onClose, upiId, upiPayee }) {
   const amount = memType ? MEMBERSHIP_FEES[memType] : "";
   const targetUpiId = upiId || "8299177208@upi";
   const targetPayee = upiPayee || "DRT BAR ASSOCIATION";
-  
-  const generatedUpiLink = memType 
+
+  const generatedUpiLink = memType
     ? `upi://pay?pa=${targetUpiId}&pn=${targetPayee}&am=${amount}&cu=INR`
     : "";
 
@@ -204,7 +216,9 @@ function PaymentGate({ isMobile, onConfirmed, onClose, upiId, upiPayee }) {
         <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-4 flex items-center justify-between flex-shrink-0">
           <div>
             <h2 className="text-white font-bold text-lg">Membership Payment</h2>
-            <p className="text-slate-300 text-sm">Complete payment to register</p>
+            <p className="text-slate-300 text-sm">
+              Complete payment to register
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -218,15 +232,18 @@ function PaymentGate({ isMobile, onConfirmed, onClose, upiId, upiPayee }) {
           {/* Membership Type Selection */}
           <div className="mb-6">
             <label className="block text-sm font-semibold text-zinc-700 mb-2">
-              Select Membership Type First <span className="text-red-500">*</span>
+              Select Membership Type First{" "}
+              <span className="text-red-500">*</span>
             </label>
             <select
               value={memType}
               onChange={(e) => setMemType(e.target.value)}
               className="w-full h-11 px-3 rounded-xl border border-zinc-300 bg-zinc-50 text-sm text-zinc-900 font-medium focus:outline-none focus:ring-2 focus:ring-slate-500 transition-shadow"
             >
-              <option value="" disabled>Select Type...</option>
-              {MEMBERSHIP_TYPES.map(type => (
+              <option value="" disabled>
+                Select Type...
+              </option>
+              {MEMBERSHIP_TYPES.map((type) => (
                 <option key={type} value={type}>
                   {type} — ₹{MEMBERSHIP_FEES[type]}
                 </option>
@@ -248,7 +265,9 @@ function PaymentGate({ isMobile, onConfirmed, onClose, upiId, upiPayee }) {
                 <div className="flex flex-col items-center gap-5 py-4">
                   <div className="text-center mb-2">
                     <p className="text-sm text-zinc-500 mb-1">Amount to pay</p>
-                    <p className="text-3xl font-black text-zinc-900">₹{amount}</p>
+                    <p className="text-3xl font-black text-zinc-900">
+                      ₹{amount}
+                    </p>
                   </div>
                   <a
                     href={generatedUpiLink}
@@ -264,7 +283,10 @@ function PaymentGate({ isMobile, onConfirmed, onClose, upiId, upiPayee }) {
                     Open UPI link manually
                   </a>
                   <p className="text-xs text-zinc-400 mt-1 text-center">
-                    UPI ID: <span className="font-mono font-medium text-zinc-600">{targetUpiId}</span>
+                    UPI ID:{" "}
+                    <span className="font-mono font-medium text-zinc-600">
+                      {targetUpiId}
+                    </span>
                   </p>
                 </div>
               ) : (
@@ -274,12 +296,18 @@ function PaymentGate({ isMobile, onConfirmed, onClose, upiId, upiPayee }) {
                     <UpiQRCode upiLink={generatedUpiLink} size={180} />
                   </div>
                   <div className="text-center bg-zinc-50 px-6 py-3 rounded-xl border border-zinc-100 w-full">
-                    <p className="text-xs text-zinc-500 uppercase font-bold tracking-wider mb-1">Scan to Pay</p>
-                    <p className="text-2xl font-black text-zinc-900 mb-2">₹{amount}</p>
+                    <p className="text-xs text-zinc-500 uppercase font-bold tracking-wider mb-1">
+                      Scan to Pay
+                    </p>
+                    <p className="text-2xl font-black text-zinc-900 mb-2">
+                      ₹{amount}
+                    </p>
                     <p className="text-sm font-medium text-zinc-700 font-mono bg-white border border-zinc-200 px-3 py-1 rounded inline-block">
                       {targetUpiId}
                     </p>
-                    <p className="text-xs text-zinc-400 mt-2">Payee: {targetPayee}</p>
+                    <p className="text-xs text-zinc-400 mt-2">
+                      Payee: {targetPayee}
+                    </p>
                   </div>
                 </div>
               )}
@@ -290,8 +318,8 @@ function PaymentGate({ isMobile, onConfirmed, onClose, upiId, upiPayee }) {
             <p className="text-sm text-zinc-600 text-center font-medium">
               After successful payment, click below.
             </p>
-            <Button 
-              className="w-full h-12 text-base font-bold" 
+            <Button
+              className="w-full h-12 text-base font-bold"
               onClick={() => onConfirmed(memType)}
               disabled={!memType}
             >
@@ -305,7 +333,17 @@ function PaymentGate({ isMobile, onConfirmed, onClose, upiId, upiPayee }) {
 }
 
 /* ─── Field & Select helpers (defined OUTSIDE to avoid focus-loss bug) ─── */
-function Field({ label, name, type = "text", required, placeholder, children, form, errors, handleChange }) {
+function Field({
+  label,
+  name,
+  type = "text",
+  required,
+  placeholder,
+  children,
+  form,
+  errors,
+  handleChange,
+}) {
   return (
     <div>
       <label className="block text-xs font-semibold text-zinc-600 mb-1">
@@ -321,7 +359,9 @@ function Field({ label, name, type = "text", required, placeholder, children, fo
           className={`text-sm h-9 ${errors[name] ? "border-red-400 focus-visible:ring-red-400" : ""}`}
         />
       )}
-      {errors[name] && <p className="text-xs text-red-500 mt-0.5">{errors[name]}</p>}
+      {errors[name] && (
+        <p className="text-xs text-red-500 mt-0.5">{errors[name]}</p>
+      )}
     </div>
   );
 }
@@ -351,9 +391,9 @@ function FormSelect({ label, name, required, options, form, handleChange }) {
 /* ─── Registration Form ───────────────────────────── */
 function RegistrationForm({ prefillType, onSuccess, onClose }) {
   const [form, setForm] = useState({
-    ...INITIAL_FORM, 
+    ...INITIAL_FORM,
     membershipType: prefillType || INITIAL_FORM.membershipType,
-    membershipFee: MEMBERSHIP_FEES[prefillType || INITIAL_FORM.membershipType]
+    membershipFee: MEMBERSHIP_FEES[prefillType || INITIAL_FORM.membershipType],
   });
   const [photo, setPhoto] = useState(null);
   const [photoError, setPhotoError] = useState("");
@@ -364,19 +404,19 @@ function RegistrationForm({ prefillType, onSuccess, onClose }) {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    
+
     if (name === "membershipType") {
-      setForm((prev) => ({ 
-        ...prev, 
+      setForm((prev) => ({
+        ...prev,
         [name]: value,
-        membershipFee: MEMBERSHIP_FEES[value]
+        membershipFee: MEMBERSHIP_FEES[value],
       }));
     } else if (type === "checkbox") {
       setForm((prev) => ({ ...prev, [name]: checked }));
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
     }
-    
+
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
@@ -416,7 +456,8 @@ function RegistrationForm({ prefillType, onSuccess, onClose }) {
     if (!form.name.trim()) e.name = "Name is required";
     if (!form.phone.trim()) e.phone = "Mobile number is required";
     if (!form.address.trim()) e.address = "Address is required";
-    if (!form.transactionNumber.trim()) e.transactionNumber = "Transaction number is required";
+    if (!form.transactionNumber.trim())
+      e.transactionNumber = "Transaction number is required";
     if (!form.amountPaid.trim()) e.amountPaid = "Amount paid is required";
     if (!form.paymentTime.trim()) e.paymentTime = "Payment time is required";
     if (!photo) e.photo = "Passport photo is required";
@@ -460,8 +501,12 @@ function RegistrationForm({ prefillType, onSuccess, onClose }) {
           {/* Header */}
           <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-4 rounded-t-2xl flex items-center justify-between sticky top-0">
             <div>
-              <h2 className="text-white font-bold text-lg">Membership Registration</h2>
-              <p className="text-slate-300 text-xs mt-0.5">All fields marked * are required</p>
+              <h2 className="text-white font-bold text-lg">
+                Membership Registration
+              </h2>
+              <p className="text-slate-300 text-xs mt-0.5">
+                All fields marked * are required
+              </p>
             </div>
             <button
               onClick={onClose}
@@ -478,7 +523,15 @@ function RegistrationForm({ prefillType, onSuccess, onClose }) {
                 Personal Information
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="Advocate Name" name="name" required placeholder="Full name" form={form} errors={errors} handleChange={handleChange} />
+                <Field
+                  label="Advocate Name"
+                  name="name"
+                  required
+                  placeholder="Full name"
+                  form={form}
+                  errors={errors}
+                  handleChange={handleChange}
+                />
                 <FormSelect
                   label="Gender"
                   name="gender"
@@ -486,22 +539,56 @@ function RegistrationForm({ prefillType, onSuccess, onClose }) {
                   handleChange={handleChange}
                   options={[
                     { value: "", label: "Select gender" },
-                    ...GENDER_OPTIONS
+                    ...GENDER_OPTIONS,
                   ]}
                 />
-                <Field label="Mobile Number" name="phone" required placeholder="+91 98765 43210" form={form} errors={errors} handleChange={handleChange} />
-                <Field label="Email" name="email" type="email" placeholder="advocate@example.com" form={form} errors={errors} handleChange={handleChange} />
-                <Field label="Date of Birth" name="dob" type="date" form={form} errors={errors} handleChange={handleChange} />
+                <Field
+                  label="Mobile Number"
+                  name="phone"
+                  required
+                  placeholder="+91 98765 43210"
+                  form={form}
+                  errors={errors}
+                  handleChange={handleChange}
+                />
+                <Field
+                  label="Email"
+                  name="email"
+                  type="email"
+                  placeholder="advocate@example.com"
+                  required
+                  form={form}
+                  errors={errors}
+                  handleChange={handleChange}
+                />
+                <Field
+                  label="Date of Birth"
+                  name="dob"
+                  type="date"
+                  required
+                  form={form}
+                  errors={errors}
+                  handleChange={handleChange}
+                />
                 <FormSelect
                   label="Blood Group"
                   name="bloodGroup"
+                  required
                   form={form}
                   handleChange={handleChange}
                   options={[{ value: "", label: "Select" }, ...BLOOD_GROUPS]}
                 />
               </div>
               <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="Address" name="address" required placeholder="Full address" form={form} errors={errors} handleChange={handleChange}>
+                <Field
+                  label="Address"
+                  name="address"
+                  required
+                  placeholder="Full address"
+                  form={form}
+                  errors={errors}
+                  handleChange={handleChange}
+                >
                   <textarea
                     name="address"
                     value={form.address}
@@ -513,10 +600,19 @@ function RegistrationForm({ prefillType, onSuccess, onClose }) {
                     }`}
                   />
                   {errors.address && (
-                    <p className="text-xs text-red-500 mt-0.5">{errors.address}</p>
+                    <p className="text-xs text-red-500 mt-0.5">
+                      {errors.address}
+                    </p>
                   )}
                 </Field>
-                <Field label="State" name="state" placeholder="Telangana" form={form} errors={errors} handleChange={handleChange} />
+                <Field
+                  label="State"
+                  name="state"
+                  placeholder="Telangana"
+                  form={form}
+                  errors={errors}
+                  handleChange={handleChange}
+                />
               </div>
             </div>
 
@@ -526,8 +622,22 @@ function RegistrationForm({ prefillType, onSuccess, onClose }) {
                 Enrollment Details
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="Enrollment Number" name="enrollmentNumber" placeholder="TS/1234/2023" form={form} errors={errors} handleChange={handleChange} />
-                <Field label="Enrollment Date" name="enrollmentDate" type="date" form={form} errors={errors} handleChange={handleChange} />
+                <Field
+                  label="Enrollment Number"
+                  name="enrollmentNumber"
+                  placeholder="TS/1234/2023"
+                  form={form}
+                  errors={errors}
+                  handleChange={handleChange}
+                />
+                <Field
+                  label="Enrollment Date"
+                  name="enrollmentDate"
+                  type="date"
+                  form={form}
+                  errors={errors}
+                  handleChange={handleChange}
+                />
               </div>
             </div>
 
@@ -544,9 +654,18 @@ function RegistrationForm({ prefillType, onSuccess, onClose }) {
                   handleChange={handleChange}
                   options={MEMBERSHIP_TYPES}
                 />
-                <Field label="Membership Date" name="membershipDate" type="date" form={form} errors={errors} handleChange={handleChange} />
+                <Field
+                  label="Membership Date"
+                  name="membershipDate"
+                  type="date"
+                  form={form}
+                  errors={errors}
+                  handleChange={handleChange}
+                />
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-600 mb-1">Membership Fee (₹)</label>
+                  <label className="block text-xs font-semibold text-zinc-600 mb-1">
+                    Membership Fee (₹)
+                  </label>
                   <input
                     readOnly
                     name="membershipFee"
@@ -564,7 +683,8 @@ function RegistrationForm({ prefillType, onSuccess, onClose }) {
               </h3>
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
                 <p className="text-xs text-amber-700 font-medium">
-                  These fields are mandatory. Please enter exact details from your UPI receipt.
+                  These fields are mandatory. Please enter exact details from
+                  your UPI receipt.
                 </p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -573,21 +693,27 @@ function RegistrationForm({ prefillType, onSuccess, onClose }) {
                   name="transactionNumber"
                   required
                   placeholder="UPI Ref / Transaction ID"
-                  form={form} errors={errors} handleChange={handleChange}
+                  form={form}
+                  errors={errors}
+                  handleChange={handleChange}
                 />
                 <Field
                   label="Amount Paid (₹)"
                   name="amountPaid"
                   required
                   placeholder="e.g. 500"
-                  form={form} errors={errors} handleChange={handleChange}
+                  form={form}
+                  errors={errors}
+                  handleChange={handleChange}
                 />
                 <Field
                   label="Payment Time"
                   name="paymentTime"
                   type="datetime-local"
                   required
-                  form={form} errors={errors} handleChange={handleChange}
+                  form={form}
+                  errors={errors}
+                  handleChange={handleChange}
                 />
               </div>
             </div>
@@ -613,7 +739,9 @@ function RegistrationForm({ prefillType, onSuccess, onClose }) {
                 {photo ? (
                   <div className="flex flex-col items-center gap-2">
                     <ImageIcon className="w-8 h-8 text-emerald-500" />
-                    <p className="text-sm font-medium text-zinc-700">{photo.name}</p>
+                    <p className="text-sm font-medium text-zinc-700">
+                      {photo.name}
+                    </p>
                     <p className="text-xs text-zinc-400">
                       {(photo.size / 1024).toFixed(1)} KB — Click to change
                     </p>
@@ -631,7 +759,9 @@ function RegistrationForm({ prefillType, onSuccess, onClose }) {
                 )}
               </div>
               {(photoError || errors.photo) && (
-                <p className="text-xs text-red-500 mt-1">{photoError || errors.photo}</p>
+                <p className="text-xs text-red-500 mt-1">
+                  {photoError || errors.photo}
+                </p>
               )}
             </div>
 
@@ -654,7 +784,9 @@ function RegistrationForm({ prefillType, onSuccess, onClose }) {
                 {barCert ? (
                   <div className="flex flex-col items-center gap-2">
                     <FileText className="w-8 h-8 text-emerald-500" />
-                    <p className="text-sm font-medium text-zinc-700">{barCert.name}</p>
+                    <p className="text-sm font-medium text-zinc-700">
+                      {barCert.name}
+                    </p>
                     <p className="text-xs text-zinc-400">
                       {(barCert.size / 1024).toFixed(1)} KB — Click to change
                     </p>
@@ -691,7 +823,8 @@ function RegistrationForm({ prefillType, onSuccess, onClose }) {
                   I have Certificate of Practice (COP)
                 </p>
                 <p className="text-xs text-zinc-500 mt-0.5">
-                  Check this if you hold a valid Certificate of Practice issued by the Bar Council.
+                  Check this if you hold a valid Certificate of Practice issued
+                  by the Bar Council.
                 </p>
               </label>
             </div>
@@ -704,7 +837,11 @@ function RegistrationForm({ prefillType, onSuccess, onClose }) {
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={loading} className="min-w-[140px]">
+              <Button
+                type="submit"
+                disabled={loading}
+                className="min-w-[140px]"
+              >
                 {loading ? "Submitting..." : "Submit Application"}
               </Button>
             </div>
@@ -723,10 +860,12 @@ function SuccessModal({ onClose }) {
         <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 className="w-10 h-10 text-emerald-500" />
         </div>
-        <h2 className="text-2xl font-bold text-zinc-900 mb-2">Application Submitted!</h2>
+        <h2 className="text-2xl font-bold text-zinc-900 mb-2">
+          Application Submitted!
+        </h2>
         <p className="text-zinc-500 text-sm mb-6">
-          Your membership application has been received and is pending admin approval.
-          You will be added to the directory once approved.
+          Your membership application has been received and is pending admin
+          approval. You will be added to the directory once approved.
         </p>
         <Button className="w-full" onClick={onClose}>
           Back to Directory
@@ -796,6 +935,7 @@ const Members = () => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [virtualSettings, setVirtualSettings] = useState({});
+  const [memberAssignments, setMemberAssignments] = useState({});
 
   // Modal states
   const [showPayment, setShowPayment] = useState(false);
@@ -806,11 +946,16 @@ const Members = () => {
   useEffect(() => {
     fetchMembers();
     fetchVirtualSettings();
+    getMemberAssignments()
+      .then(setMemberAssignments)
+      .catch(() => {});
   }, []);
 
   const fetchVirtualSettings = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/virtual`);
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/admin/virtual`,
+      );
       setVirtualSettings(res.data || {});
     } catch (err) {
       console.error("Failed to fetch virtual settings");
@@ -887,7 +1032,6 @@ const Members = () => {
         {/* Page Header */}
         {/* <div className="mt-35  flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8"> */}
         <div className="mt-10 mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
-
           <div>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-zinc-900">
               Member Directory
@@ -960,7 +1104,9 @@ const Members = () => {
               <Search className="w-7 h-7 text-zinc-300" />
             </div>
             <p className="text-zinc-500 font-medium">
-              {search ? "No members match your search." : "No approved members yet."}
+              {search
+                ? "No members match your search."
+                : "No approved members yet."}
             </p>
             {search && (
               <button
@@ -975,7 +1121,11 @@ const Members = () => {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {paginated.map((m) => (
-                <MemberCard key={m._id} member={m} />
+                <MemberCard
+                  key={m._id}
+                  member={m}
+                  isCommissioner={!!memberAssignments[m._id]}
+                />
               ))}
             </div>
             <Pagination page={page} totalPages={totalPages} onPage={setPage} />

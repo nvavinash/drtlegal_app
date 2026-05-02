@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import * as XLSX from "xlsx";
 import {
   TrendingUp,
   TrendingDown,
@@ -14,7 +15,12 @@ import {
   Filter,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
-import { getTransactions, getSummary, addTransaction, deleteTransaction } from "../api/ledger";
+import {
+  getTransactions,
+  getSummary,
+  addTransaction,
+  deleteTransaction,
+} from "../api/ledger";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 const fmt = (n) =>
@@ -30,29 +36,93 @@ const fmtDate = (d) => {
 };
 
 // Export transactions as CSV
-const exportCSV = (transactions) => {
-  const headers = ["Date", "Name", "Type", "Amount", "Description", "Payment Mode", "Transaction ID"];
-  const rows = transactions.map((t) => [
-    fmtDate(t.date),
-    `"${t.name}"`,
-    t.type,
-    t.amount,
-    `"${t.description}"`,
-    t.paymentMode || "",
-    t.transactionId || "",
-  ]);
-  const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
-  const blob = new Blob([csv], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `ledger_${Date.now()}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+// const exportCSV = (transactions) => {
+//   const headers = [
+//     "Date",
+//     "Name",
+//     "Type",
+//     "Amount",
+//     "Description",
+//     "Payment Mode",
+//     "Transaction ID",
+//   ];
+//   const rows = transactions.map((t) => [
+//     fmtDate(t.date),
+//     `"${t.name}"`,
+//     t.type,
+//     t.amount,
+//     `"${t.description}"`,
+//     t.paymentMode || "",
+//     t.transactionId || "",
+//   ]);
+//   const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
+//   const blob = new Blob([csv], { type: "text/csv" });
+//   const url = URL.createObjectURL(blob);
+//   const a = document.createElement("a");
+//   a.href = url;
+//   a.download = `ledger_${Date.now()}.csv`;
+//   a.click();
+//   URL.revokeObjectURL(url);
+// };
+
+// Export transactions as Excel----------------------------
+
+const exportExcel = (transactions) => {
+  const rows = [
+    [
+      "Date",
+      "Name",
+      "Type",
+      "Amount",
+      "Description",
+      "Payment Mode",
+      "Transaction ID",
+    ],
+  ];
+
+  transactions.forEach((t) => {
+    rows.push([
+      fmtDate(t.date),
+      t.name,
+      t.type,
+      t.amount,
+      t.description,
+      t.paymentMode || "",
+      t.transactionId || "",
+    ]);
+  });
+
+  // Create worksheet
+  const worksheet = XLSX.utils.aoa_to_sheet(rows);
+
+  // Optional: column widths (makes Excel clean)
+  worksheet["!cols"] = [
+    { wch: 15 },
+    { wch: 25 },
+    { wch: 12 },
+    { wch: 12 },
+    { wch: 30 },
+    { wch: 18 },
+    { wch: 25 },
+  ];
+
+  // Create workbook
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Ledger");
+
+  // Download file
+  XLSX.writeFile(workbook, `ledger_${Date.now()}.xlsx`);
 };
 
 // ─── Summary Card ────────────────────────────────────────────────────────────
-const SummaryCard = ({ title, value, icon: Icon, colorClass, bgClass, delay }) => (
+const SummaryCard = ({
+  title,
+  value,
+  icon: Icon,
+  colorClass,
+  bgClass,
+  delay,
+}) => (
   <motion.div
     initial={{ opacity: 0, y: 24 }}
     animate={{ opacity: 1, y: 0 }}
@@ -61,7 +131,9 @@ const SummaryCard = ({ title, value, icon: Icon, colorClass, bgClass, delay }) =
   >
     <div className="flex items-start justify-between">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500 mb-1">{title}</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500 mb-1">
+          {title}
+        </p>
         <p className={`text-3xl font-extrabold tracking-tight ${colorClass}`}>
           ₹{fmt(value)}
         </p>
@@ -102,13 +174,19 @@ const AddModal = ({ onClose, onSave, loading }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const errs = validate();
-    if (Object.keys(errs).length) { setErrors(errs); return; }
+    if (Object.keys(errs).length) {
+      setErrors(errs);
+      return;
+    }
     onSave(form);
   };
 
   const field = (id, label, type = "text", placeholder = "") => (
     <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">
+      <label
+        htmlFor={id}
+        className="text-xs font-semibold text-zinc-500 uppercase tracking-wide"
+      >
         {label}
       </label>
       <input
@@ -144,21 +222,34 @@ const AddModal = ({ onClose, onSave, loading }) => {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-zinc-100">
           <h2 className="text-lg font-bold text-zinc-800">Add Transaction</h2>
-          <button onClick={onClose} className="text-zinc-400 hover:text-zinc-700 transition">
+          <button
+            onClick={onClose}
+            className="text-zinc-400 hover:text-zinc-700 transition"
+          >
             <X size={20} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form
+          onSubmit={handleSubmit}
+          className="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 gap-4"
+        >
           {/* Name */}
-          <div className="sm:col-span-2">{field("name", "Name / Party", "text", "e.g. Ravi Kumar")}</div>
+          <div className="sm:col-span-2">
+            {field("name", "Name / Party", "text", "e.g. Ravi Kumar")}
+          </div>
 
           {/* Type */}
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Type</label>
+            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">
+              Type
+            </label>
             <div className="flex gap-3">
               {["credit", "debit"].map((t) => (
-                <label key={t} className="flex items-center gap-2 cursor-pointer">
+                <label
+                  key={t}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
                   <input
                     type="radio"
                     name="type"
@@ -183,14 +274,25 @@ const AddModal = ({ onClose, onSave, loading }) => {
           {field("amount", "Amount (₹)", "number", "0.00")}
 
           {/* Description */}
-          <div className="sm:col-span-2">{field("description", "Description", "text", "e.g. Monthly expenses")}</div>
+          <div className="sm:col-span-2">
+            {field(
+              "description",
+              "Description",
+              "text",
+              "e.g. Monthly expenses",
+            )}
+          </div>
 
           {/* Payment Mode */}
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Payment Mode</label>
+            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">
+              Payment Mode
+            </label>
             <select
               value={form.paymentMode}
-              onChange={(e) => setForm({ ...form, paymentMode: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, paymentMode: e.target.value })
+              }
               className="border border-zinc-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40"
             >
               <option value="">— Select —</option>
@@ -201,13 +303,23 @@ const AddModal = ({ onClose, onSave, loading }) => {
           </div>
 
           {/* Transaction ID */}
-          {field("transactionId", "Transaction ID (optional)", "text", "UTR / Ref No.")}
+          {field(
+            "transactionId",
+            "Transaction ID (optional)",
+            "text",
+            "UTR / Ref No.",
+          )}
 
           {/* Date */}
           <div className="sm:col-span-2">{field("date", "Date", "date")}</div>
 
           <div className="sm:col-span-2 flex justify-end gap-3 pt-2">
-            <Button type="button" variant="outline" onClick={onClose} className="rounded-lg">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              className="rounded-lg"
+            >
               Cancel
             </Button>
             <Button
@@ -233,7 +345,11 @@ const Ledger = () => {
   const token = localStorage.getItem("token");
 
   const [transactions, setTransactions] = useState([]);
-  const [summary, setSummary] = useState({ totalCredit: 0, totalDebit: 0, balance: 0 });
+  const [summary, setSummary] = useState({
+    totalCredit: 0,
+    totalDebit: 0,
+    balance: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -249,7 +365,10 @@ const Ledger = () => {
     setLoading(true);
     setError("");
     try {
-      const [txns, sum] = await Promise.all([getTransactions(token), getSummary(token)]);
+      const [txns, sum] = await Promise.all([
+        getTransactions(token),
+        getSummary(token),
+      ]);
       setTransactions(txns);
       setSummary(sum);
     } catch (err) {
@@ -260,7 +379,11 @@ const Ledger = () => {
   };
 
   useEffect(() => {
-    if (!token) { setError("Please log in to view the ledger."); setLoading(false); return; }
+    if (!token) {
+      setError("Please log in to view the ledger.");
+      setLoading(false);
+      return;
+    }
     fetchData();
   }, []);
 
@@ -277,7 +400,7 @@ const Ledger = () => {
           transactionId: form.transactionId,
           date: form.date,
         },
-        token
+        token,
       );
       setShowModal(false);
       fetchData();
@@ -317,7 +440,6 @@ const Ledger = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-50 via-white to-slate-50 pt-24 pb-16">
       <div className="container mx-auto px-4 max-w-7xl">
-
         {/* ── Page Header ── */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -335,12 +457,12 @@ const Ledger = () => {
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
-              onClick={() => exportCSV(filtered)}
+              onClick={() => exportExcel(filtered)}
               className="rounded-xl flex items-center gap-2 text-sm"
               disabled={filtered.length === 0}
             >
               <Download size={15} />
-              Export CSV
+              Export Excel
             </Button>
             <Button
               onClick={() => setShowModal(true)}
@@ -381,7 +503,9 @@ const Ledger = () => {
             title="Net Balance"
             value={summary.balance}
             icon={Wallet}
-            colorClass={summary.balance >= 0 ? "text-blue-600" : "text-orange-500"}
+            colorClass={
+              summary.balance >= 0 ? "text-blue-600" : "text-orange-500"
+            }
             bgClass={summary.balance >= 0 ? "bg-blue-50" : "bg-orange-50"}
             delay={0.2}
           />
@@ -398,7 +522,10 @@ const Ledger = () => {
 
           {/* Search */}
           <div className="relative flex-1 min-w-[180px]">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+            <Search
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"
+            />
             <input
               type="text"
               placeholder="Search name or description…"
@@ -439,7 +566,12 @@ const Ledger = () => {
 
           {(search || typeFilter !== "all" || startDate || endDate) && (
             <button
-              onClick={() => { setSearch(""); setTypeFilter("all"); setStartDate(""); setEndDate(""); }}
+              onClick={() => {
+                setSearch("");
+                setTypeFilter("all");
+                setStartDate("");
+                setEndDate("");
+              }}
               className="text-xs text-zinc-500 hover:text-red-500 underline transition"
             >
               Clear
@@ -456,9 +588,24 @@ const Ledger = () => {
         >
           {loading ? (
             <div className="flex items-center justify-center py-20 text-zinc-400 text-sm gap-2">
-              <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+              <svg
+                className="animate-spin w-5 h-5"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"
+                />
               </svg>
               Loading transactions…
             </div>
@@ -480,7 +627,15 @@ const Ledger = () => {
               <table className="min-w-full text-sm">
                 <thead>
                   <tr className="bg-zinc-50 border-b border-zinc-100">
-                    {["Date", "Name", "Type", "Amount (₹)", "Description", "Mode", ""].map((h) => (
+                    {[
+                      "Date",
+                      "Name",
+                      "Type",
+                      "Amount (₹)",
+                      "Description",
+                      "Mode",
+                      "",
+                    ].map((h) => (
                       <th
                         key={h}
                         className="text-left px-5 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider whitespace-nowrap"
@@ -523,7 +678,9 @@ const Ledger = () => {
                       </td>
                       <td
                         className={`px-5 py-3 font-bold tabular-nums ${
-                          t.type === "credit" ? "text-emerald-600" : "text-red-500"
+                          t.type === "credit"
+                            ? "text-emerald-600"
+                            : "text-red-500"
                         }`}
                       >
                         {t.type === "debit" ? "−" : "+"}₹{fmt(t.amount)}
@@ -559,7 +716,9 @@ const Ledger = () => {
           {/* Row count footer */}
           {!loading && filtered.length > 0 && (
             <div className="px-5 py-3 border-t border-zinc-100 text-xs text-zinc-400 flex justify-between">
-              <span>{filtered.length} transaction{filtered.length !== 1 ? "s" : ""}</span>
+              <span>
+                {filtered.length} transaction{filtered.length !== 1 ? "s" : ""}
+              </span>
               <span>
                 Showing {filtered.length} of {transactions.length}
               </span>
@@ -571,7 +730,11 @@ const Ledger = () => {
       {/* ── Modal ── */}
       <AnimatePresence>
         {showModal && (
-          <AddModal onClose={() => setShowModal(false)} onSave={handleSave} loading={saving} />
+          <AddModal
+            onClose={() => setShowModal(false)}
+            onSave={handleSave}
+            loading={saving}
+          />
         )}
       </AnimatePresence>
     </div>

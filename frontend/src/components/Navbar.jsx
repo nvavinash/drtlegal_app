@@ -12,6 +12,9 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+  const isAdmin = role === "admin";
+  const isEditor = role === "editor";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,15 +31,13 @@ const Navbar = () => {
     { name: "Notices", path: "/notices" },
     { name: "Members List", path: "/members" },
     { name: "Commissioner List", path: "/commissioners" },
-    ...(token ? [{ name: "Financial Ledger", path: "/ledger" }] : []),
+    ...(isAdmin ? [{ name: "Financial Ledger", path: "/ledger" }] : []),
   ];
 
-  const handleAdminClick = () => {
-    if (token) {
-      navigate("/admin");
-    } else {
-      navigate("/login");
-    }
+  const handleDashboardClick = () => {
+    if (!token) { navigate("/login"); return; }
+    if (isEditor) navigate("/commissioner-panel");
+    else navigate("/admin");
   };
 
   return (
@@ -91,13 +92,13 @@ const Navbar = () => {
           </div>
 
           <Button
-            onClick={handleAdminClick}
+            onClick={handleDashboardClick}
             className="bg-primary hover:bg-primary/90 text-white rounded-full px-6 flex items-center gap-2"
           >
             {token ? (
               <>
                 <LayoutDashboard size={16} />
-                Dashboard
+                {isEditor ? "Commissioner Panel" : "Dashboard"}
               </>
             ) : (
               <>
@@ -144,12 +145,12 @@ const Navbar = () => {
               <hr className="border-zinc-100 my-2" />
               <Button
                 onClick={() => {
-                  handleAdminClick();
+                  handleDashboardClick();
                   setIsOpen(false);
                 }}
                 className="bg-primary hover:bg-primary/90 text-white w-full py-6 text-lg"
               >
-                {token ? "Dashboard" : "Admin Login"}
+                {token ? (isEditor ? "Commissioner Panel" : "Dashboard") : "Admin Login"}
               </Button>
             </div>
           </motion.div>

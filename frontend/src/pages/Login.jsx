@@ -15,13 +15,16 @@ export default function Login() {
   
   const navigate = useNavigate();
 
+  const [infoMsg, setInfoMsg] = useState("");
+
   const handleRequestOTP = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setInfoMsg("");
     try {
-      // API call to request OTP
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/request-otp`, { email });
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/request-otp`, { email });
+      setInfoMsg(res.data.message || "OTP sent.");
       setStep("otp");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to send OTP.");
@@ -40,7 +43,9 @@ export default function Login() {
       // Store token and role
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.role || "member");
-      navigate("/admin");
+      // Redirect based on role
+      if (res.data.role === "editor") navigate("/commissioner-panel");
+      else navigate("/admin");
     } catch (err) {
       setError(err.response?.data?.message || "Invalid OTP.");
     } finally {
@@ -97,6 +102,11 @@ export default function Login() {
             </form>
           ) : (
             <form onSubmit={handleVerifyOTP} className="space-y-4">
+              {infoMsg && (
+                <div className="mb-2 text-sm text-amber-700 font-medium bg-amber-50 border border-amber-200 p-3 rounded-md">
+                  ℹ️ {infoMsg}
+                </div>
+              )}
               <div className="space-y-2">
                 <label htmlFor="otp" className="text-sm font-medium leading-none">
                   One-Time Password

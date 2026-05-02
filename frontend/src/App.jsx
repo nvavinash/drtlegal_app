@@ -7,6 +7,7 @@ import EventDetails from "./pages/EventDetails";
 import Notices from "./pages/Notices";
 import Members from "./pages/Members";
 import Commissioners from "./pages/Commissioners";
+import CommissionerPanel from "./pages/CommissionerPanel";
 import About from "./pages/About";
 import Ledger from "./pages/Ledger";
 import Navbar from "./components/Navbar";
@@ -23,6 +24,7 @@ function App() {
         <Route path="/notices" element={<Notices />} />
         <Route path="/members" element={<Members />} />
         <Route path="/commissioners" element={<Commissioners />} />
+        <Route path="/commissioner-panel" element={<CommissionerPanel />} />
         <Route path="/about" element={<About />} />
         <Route path="/ledger" element={<Ledger />} />
 

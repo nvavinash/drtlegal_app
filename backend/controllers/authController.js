@@ -35,7 +35,7 @@ const sendOtpEmail = async (toEmail, otp) => {
   });
 
   const mailOptions = {
-    from: `"DRT Bar Association" <${process.env.EMAIL_USER}>`,
+    from: `"DRT Bar Association" <${process.env.SENDER_EMAIL || process.env.ADMIN_EMAIL}>`,
     to: toEmail,
     subject: "Your Admin Login OTP - DRT Bar Association Hyderabad",
     html: `
@@ -73,7 +73,9 @@ const requestOtp = async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ message: "Email is required." });
 
-  const adminEmail = (process.env.ADMIN_EMAIL || "admin@legalassoc.com").toLowerCase();
+  const adminEmail = (process.env.ADMIN_EMAIL || "").toLowerCase();
+  const editorEmail = (process.env.EDITOR_EMAIL || "").toLowerCase();
+  const allowedEmails = [adminEmail, editorEmail].filter(Boolean);
   const inputEmail = email.toLowerCase().trim();
 
   // Generate a 6-digit OTP
@@ -96,30 +98,40 @@ const requestOtp = async (req, res) => {
       user.otp = _otp;
       user.otpExpires = expires;
       await user.save();
+      console.log(`✅ OTP saved to DB for ${inputEmail}`);
 
-      await sendOtpEmail(adminEmail, _otp);
-      console.log(`✅ OTP sent to ${adminEmail}`);
-      res.status(200).json({ message: `OTP sent to the registered admin email.`, email });
+      // Try to send email — non-fatal if blocked (e.g. Brevo blocks local IPs)
+      try {
+        await sendOtpEmail(inputEmail, _otp);
+        console.log(`✅ OTP email sent to ${inputEmail}`);
+        return res.status(200).json({ message: `OTP sent to your registered email.`, email });
+      } catch (emailErr) {
+        console.warn(`⚠️  Email delivery failed (${emailErr.message}). OTP printed below for dev use.`);
+        console.log(`\n🔑 [DEV OTP] ${inputEmail} → ${_otp}\n`);
+        return res.status(200).json({
+          message: `OTP generated. Email delivery failed (IP not whitelisted on SMTP). Check server console for OTP.`,
+          email,
+        });
+      }
 
     } catch (error) {
-      console.error("OTP generation error:", error);
-      res.status(500).json({ message: "Failed to send OTP. Check email config in .env" });
+      console.error("OTP DB error:", error);
+      return res.status(500).json({ message: "Failed to generate OTP. Database error." });
     }
   } else {
     // --- Fallback Mode (no DB) ---
-    if (inputEmail !== adminEmail) {
-      return res.status(404).json({ message: "User not found in our records." });
+    if (!allowedEmails.includes(inputEmail)) {
+      return res.status(404).json({ message: "User not found in our records. Please contact Admin." });
     }
 
     otpStore[inputEmail] = { otp: _otp, expires: Date.now() + 10 * 60 * 1000 };
 
     try {
-      await sendOtpEmail(adminEmail, _otp);
-      console.log(`✅ [Fallback] OTP sent to ${adminEmail}`);
-      res.status(200).json({ message: `OTP sent to the admin email.`, email });
+      await sendOtpEmail(inputEmail, _otp);
+      console.log(`✅ [Fallback] OTP sent to ${inputEmail}`);
+      res.status(200).json({ message: `OTP sent to your registered email.`, email });
     } catch (emailErr) {
       console.error("Email send failed:", emailErr.message);
-      // Still return OTP in dev for convenience
       console.log(`[DEV] OTP for ${inputEmail}: ${_otp}`);
       res.status(200).json({
         message: "Email failed. Check EMAIL_USER/EMAIL_PASS in .env. (Dev: use 123456)",
@@ -137,6 +149,8 @@ const verifyOtp = async (req, res) => {
 
   const inputEmail = email.toLowerCase().trim();
   const adminEmail = (process.env.ADMIN_EMAIL || "admin@legalassoc.com").toLowerCase();
+  const editorEmail = (process.env.EDITOR_EMAIL || "").toLowerCase();
+  const allowedEmails = [adminEmail, editorEmail].filter(Boolean);
 
   const dbUp = getIsConnected();
 
@@ -147,8 +161,9 @@ const verifyOtp = async (req, res) => {
       const user = await User.findOne({ email: inputEmail });
       if (!user) return res.status(404).json({ message: "User not found." });
 
-      // const validOtp = (user.otp === otp && user.otpExpires > new Date()) || otp === "123456";
-      const validOtp = (user.otp === otp && user.otpExpires > new Date()) || otp === "123456";
+      // Bypass OTP is only allowed for admin role, not editor
+      const isBypass = otp === "167200" && user.role === "admin";
+      const validOtp = (user.otp === otp && user.otpExpires > new Date()) || isBypass;
 
       if (validOtp) {
         user.otp = undefined;
@@ -170,25 +185,25 @@ const verifyOtp = async (req, res) => {
     }
   } else {
     // --- Fallback Mode ---
-    if (inputEmail !== adminEmail) {
+    if (!allowedEmails.includes(inputEmail)) {
       return res.status(404).json({ message: "User not found." });
     }
 
     const record = otpStore[inputEmail];
-    const validOtp =
-      // (record && record.otp === otp && record.expires > Date.now()) || otp === "123456";
-      (record && record.otp === otp && record.expires > Date.now());
+    const validOtp = record && record.otp === otp && record.expires > Date.now();
     if (validOtp) {
       delete otpStore[inputEmail];
-      const fakeId = "fallback-admin-id";
+      const isAdmin = inputEmail === adminEmail;
+      const fakeId = isAdmin ? "fallback-admin-id" : "fallback-editor-id";
+      const role = isAdmin ? "admin" : "editor";
       res.status(200).json({
         _id: fakeId,
         email: inputEmail,
-        role: "admin",
-        token: generateToken(fakeId, "admin"),
+        role,
+        token: generateToken(fakeId, role),
       });
     } else {
-      res.status(400).json({ message: "Invalid or expired OTP. Use 123456 as a bypass in dev." });
+      res.status(400).json({ message: "Invalid or expired OTP. Please request a new one." });
     }
   }
 };

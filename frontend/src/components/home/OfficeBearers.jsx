@@ -9,6 +9,7 @@ import presidentImg from "../../assets/president.png";
 import secretaryImg from "../../assets/seceratary.jpeg";
 import Vicepresident from "../../assets/vicepresident.png";
 import Treasurer from "../../assets/treasurer.png";
+import Librarian from "../../assets/neerja.png";
 import Ladyrepresentative from "../../assets/lady.png";
 import JointSecretary from "../../assets/male.png";
 import Kranthikumar from "../../assets/kranthikumar.png";
@@ -86,7 +87,7 @@ const officeBearers = [
     designation: "Librarian",
     experience: "12+ Years",
     specialization: "Insolvency Law",
-    image: Ladyrepresentative, // Placeholder until actual is uploaded
+    image: Librarian, // Placeholder until actual is uploaded
     icon: <ShieldCheck className="text-emerald-500" size={16} />,
   },
   {

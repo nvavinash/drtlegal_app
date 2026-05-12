@@ -78,14 +78,14 @@ const sendOtpEmail = async (toEmail, otp) => {
           email: process.env.SENDER_EMAIL, // must be verified in Brevo
         },
         to: [{ email: toEmail }],
-        subject: "Your Admin Login OTP",
-        htmlContent: `
-          <div style="font-family: Arial;">
-            <h2>DRT Advocates Association</h2>
-            <p>Your OTP is:</p>
-            <h1 style="letter-spacing:5px;">${otp}</h1>
-            <p>This OTP is valid for 10 minutes.</p>
-          </div>
+         subject: "Your Admin Login OTP - DRT Bar Association Hyderabad",
+    htmlContent: `
+      <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto; padding: 30px; border: 1px solid #eee; border-radius: 12px;">
+        <h2 style="color: #1a1a2e; text-align:center;">DRT Advocates Association</h2>
+        <p style="color: #555; text-align:center;">Your secure One-Time Password for Admin Login:</p>
+        <div style="background: #f5f5f5; border-radius: 8px; padding: 20px; text-align:center; margin: 20px 0;">
+          <h1 style="color: #c1121f; font-size: 48px; letter-spacing: 10px; margin: 0;">${otp}</h1>
+        </div>
         `,
       },
       {

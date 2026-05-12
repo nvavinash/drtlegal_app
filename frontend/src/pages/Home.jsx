@@ -14,7 +14,7 @@ import Footer from "@/components/home/Footer";
  */
 const Home = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-20">
       {/* Hero Section */}
       <HeroBanner />
 

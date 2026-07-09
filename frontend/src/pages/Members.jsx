@@ -53,7 +53,7 @@ const GENDER_OPTIONS = ["Male", "Female", "Other"];
 
 const MEMBERSHIP_FEES = {
   "PATRON MEMBER": "10525",
-  "LIFE MEMBER": "3525",
+  "LIFE MEMBER": "1525",
   "ORDINARY MEMBER": "1125",
 };
 

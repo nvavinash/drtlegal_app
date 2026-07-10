@@ -717,6 +717,18 @@ function RegistrationForm({ prefillType, onSuccess, onClose }) {
                 />
               </div>
             </div>
+            <div>
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+                            <a
+    href="https://image.pi7.org/reduce-image-size-in-kb"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="ml-auto text-xs text-blue-600 hover:underline"
+  >
+    Click here to Reduce Image Size under 100KB
+  </a>
+              </div>
+            </div>
 
             {/* Section: Photo */}
             <div>
